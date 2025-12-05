@@ -176,8 +176,7 @@ PACKET_PRICE = 2.40
 SITE_MAINTENANCE_MODE = True
 TRANSITION = False  # whether we are in the transition period between years (July - Dec)
 
-PKG_SIZES = ["Net wt. 1/8 oz", "Net wt. 1/4 oz", "Net wt. 1/2 oz", "Net wt. 1 oz", "Net wt. 2 oz", "Net wt. 1/4 lb", "Net wt. 1/2 lb", 
-             "Net wt. 1 lb", "Net wt. 2½ lb", "Net wt. 5 lb", "Approx. 10 seeds", "Approx. 15 seeds", "Approx. 20 seeds", "Approx. 20-25 seeds", "Approx. 25 seeds", 
+PKG_SIZES = ["Net wt. 1/8 oz", "Net wt. 1/4 oz", "Net wt. 1/2 oz", "Net wt. 1 oz", "Approx. 10 seeds", "Approx. 15 seeds", "Approx. 20 seeds", "Approx. 20-25 seeds", "Approx. 25 seeds", 
              "Approx. 25-30 seeds", "Approx. 30 seeds", "Approx. 30-35 seeds", "Approx. 35 seeds", "Approx. 40 seeds", "Approx. 50 seeds", 
              "Approx. 75 seeds", "Approx. 75-100 seeds", "Approx. 100 seeds", "Approx. 150 seeds", "Approx. 200 seeds", "Approx. 250 seeds", "Approx. 300 seeds", 
              "Approx. 500 seeds", "Approx. 1000 seeds", "Approx. 5k seeds", "Approx. 10k seeds", "Approx. 25k seeds", "Net wt. 1/4 g", "Net wt. 1/3 g", 
@@ -186,9 +185,7 @@ PKG_SIZES = ["Net wt. 1/8 oz", "Net wt. 1/4 oz", "Net wt. 1/2 oz", "Net wt. 1 oz
 SKU_SUFFIXES = ["pkt", "1/8oz", "1/4oz", "1/2oz", "1oz", "2oz", "1/4lb", "1/2lb", "1lb", "2.5lb", "5lb", "1/4g",
                 "1g", "50s", "100s", "200s", "250s", "500s", "1Ms", "5Ms", "10Ms", "25Ms"]
 
-ENV_TYPES =["Bean", "Beet", "Brassica", "Carrot", "Chard", "Corn", "Cosmos", "Cuke", "Flower", "Greens", "Herb",
-            "Lettuce", "Onion", "Pea", "Pepper", "Poppy", "Smarties", "Smarties Rad", "Squash, Summer", "Squash, Winter",
-            "Sunflower", "Sweet Pea", "Tomato", "Veg", "Zinnia", "LG Coffee", "SM Coffee"]
+ENV_TYPES =["Cosmos", "Flower", "Herb", "Poppy", "Sunflower", "Sweet Pea", "Zinnia", "LG Coffee", "SM Coffee"]
 
 
 CROPS = ['AMARANTH', "BACHELOR'S BUTTON", 'BASKET FLOWER', 'BORAGE', 'BUPLEURUM', 'CALENDULA', 'CELOSIA', 'CERINTHE', 'CHINA ASTER', 
@@ -200,31 +197,14 @@ CROPS = ['AMARANTH', "BACHELOR'S BUTTON", 'BASKET FLOWER', 'BORAGE', 'BUPLEURUM'
          'SAINFOIN', 'SALVIA', 'SAPONARIA', 'SCABIOSA', 'SIBERIAN YARROW', 'SNAPDRAGON', 'STRAWFLOWER', 'SUNFLOWER', 'SUNFLOWER, MEXICAN', 
          'SWEET PEA', 'ZINNIA', 'BASIL', 'BASIL, GREEK', 'BASIL, SACRED', 'CHERVIL', 'CILANTRO', 'CULINARY HERBS', 'DILL', 'ECHINACEA', 
          'GERMAN CHAMOMILE', 'HYSSOP', 'LICORICE MINT', 'MARIGOLD', 'MARSHMALLOW', 'MONARDA', 'MULLEIN', 'NEPITELLA', 'NIGELLA SATIVA', 
-         'PARSLEY, FLATLEAF', 'TRIGONELLA', 'AMARANTH GREENS', 'BEAN', 'BEAN, BUSH DRY', 'BEAN, BUSH DRY/SHELLY', 'BEAN, BUSH SNAP', 'BEAN, FAVA', 
-         'BEAN, GARBANZO', 'BEAN, MISC', 'BEAN, POLE DRY', 'BEAN, POLE FILET SNAP', 'BEAN, POLE ROMANO SNAP', 'BEAN, POLE SNAP', 'BEAN, RUNNER', 
-         'BEET', 'BEET, SPECIALTY', 'BOK CHOI', 'BROCCOLI', 'BURDOCK', 'CABBAGE, FALL', 'CABBAGE, NAPA', 'CABBAGE, SUMMER', 'CABBAGE, WINTER', 
-         'CARDOON', 'CARROT', 'CAULIFLOWER', 'CELERIAC', 'CHICORY', 'CHRYSANTHEMUM/SHUNGIKU', 'COLLARDS', 'CORN, DRY', 'CORN, FLOUR', 'CORN, POPPING', 
-         'CORN, SWEET', 'CUCUMBER', 'CUCUMBER, PERSIAN', 'CURLY ENDIVE', 'EGGPLANT', 'ENDIVE, BELGIAN', 'ENDIVE, CURLY', 'ESCAROLE', 'FENNEL (FINOCCHIO)', 
-         'GREENS, ARUGULA', 'GREENS, ASIAN', 'GREENS, CRESS', 'GREENS, MESCLUN', 'GREENS, MUSTARD', 'GREENS, SPECIALTY', 'GROUND CHERRY', 'KALE', 
-         'LEAF BROCCOLI', 'LEEK', 'LENTIL', 'LETTUCE', 'LETTUCE, BIBB/ROMAINE', 'LETTUCE, BUTTERHEAD', 'LETTUCE, CRISPHEAD', 'LETTUCE, LOOSELEAF', 
-         'LETTUCE, MIX', 'LETTUCE, OAKLEAF', 'LETTUCE, ROMAINE', 'MELON', 'MIXED GREENS', 'ONION, RED STORAGE', 'ONION, SCALLION', 'ONION, STORAGE', 
-         'ONION, SWEET', 'PARSNIP', 'PEA', 'PEA, CLIMBING SNAP', 'PEA, COWPEA', 'PEA, DRY/SOUP', 'PEA, DWARF SNAP', 'PEA, SHELLING', 'PEA, SNAP', 
-         'PEA, SNOW', 'PEPPER', 'PEPPER, HOT', 'PEPPER, SWEET', 'RADICCHIO', 'RADISH', 'RAPINI/CIMA DI RAPA', 'SHALLOT', 'SORREL', 'SPINACH', 
-         'STRAWBERRY', 'SUMMER SQUASH', 'SUMMER SQUASH, ZUCCHINI', 'SWEET LUPINE', 'SWISS CHARD', 'TOMATILLO', 'TOMATO', 'TOMATO, CHERRY', 
-         'TOMATO, PASTE', 'TOMATO, WINTER', 'WATERMELON', 'WHEAT', 'WHEAT, EMMER', 'WINTER SQUASH', 'WINTER SQUASH, PUMPKIN']
+         'PARSLEY, FLATLEAF', 'TRIGONELLA']
 
 
 # this is a general category. Example: "Cuke and Melon", "Bean and Pulse", "Greens", "Brassicas", "Flower", "Herb"
-GROUPS = ["Allium", "Bean & Pulse", "Beet & Chard", "Brassicas", "Carrot", "Cuke & Melon", "Eggplant & Pepper",
-          "Flower", "Grain & Corn", "Greens", "Herb", "Lettuce", "Misc", "Pea", "Squash", "Tomato"]
+GROUPS = ["Flower", "Herb"]
 
 # this is a more specific category. Example: "Cuke", "Melon", "Bean", "Pea", "Lettuce", "Tomato"
-VEG_TYPES = ["ARUGULA", "ASIAN GREENS", "BEAN", "BEET", "BOK CHOI", "BROCCOLI", "BURDOCK", "CABBAGE", "CARDOON",
-             "CARROT", "CAULIFLOWER", "CELERIAC", "CHICORY", "CHRYSANTHEMUM", "COLLARDS", "CORN", "CRESS", "CUCUMBER",
-             "EGGPLANT", "ENDIVE", "ESCAROLE", "FAVA BEAN", "FENNEL", "GROUND CHERRY", "KALE", "LEEK", "LENTIL", "LETTUCE",
-             "MELON", "MUSTARD GREENS", "ONION", "PARSNIP", "PEA", "PEPPER", "PUMPKIN", "RADICCHIO", "RADISH", "RAPINI",
-             "SHALLOT", "SORREL", "SPINACH", "STRAWBERRY", "SUMMER SQUASH", "SWEET LUPINE", "SWISS CHARD", "TOMATILLO",
-             "TOMATO", "WATERMELON", "WHEAT", "WINTER SQUASH", "AMARANTH", "ASTER", "BACHELOR'S BUTTON", "BASKET FLOWER",
+VEG_TYPES = ["CHRYSANTHEMUM", "AMARANTH", "ASTER", "BACHELOR'S BUTTON", "BASKET FLOWER",
              "BORAGE", "BUPLEURUM", "CALENDULA", "CELOSIA", "CERINTHE", "CHINESE FORGET-ME-NOT", "CLEOME", "COLUMBINE",
              "COREOPSIS", "COSMOS", "CRASPEDIA", "DATURA", "DELPHINIUM", "DIANTHUS", "DIDISCUS", "ERYNGIUM", "FLAX",
              "FOUR O'CLOCKS", "FOXGLOVE", "GRASS", "GYPSOPHILA", "JACOB'S LADDER", "LARKSPUR", "MARIGOLD", "MIGNONETTE",
@@ -233,20 +213,12 @@ VEG_TYPES = ["ARUGULA", "ASIAN GREENS", "BEAN", "BEET", "BOK CHOI", "BROCCOLI", 
              "YARROW", "ZINNIA", "BASIL", "CHAMOMILE", "CHERVIL", "CILANTRO", "DILL", "ECHINACEA", "HYSSOP",
              "LICORICE MINT", "MARSHMALLOW", "MONARDA", "PARSLEY"]
 
-SUPERGROUPS = ["Vegetable", 
-               "Flower",
+SUPERGROUPS = ["Flower",
                "Herb",
               ] 
 
-SUBTYPES = ["AMARANTH", "ARUGULA", "ASIAN", "BIBB/ROMAINE", "BRAISING", "BREADSEED", "BUTTERHEAD", "CALIFORNIA",
-            "CARVING", "CHERRY", "CHINA", "CHINESE", "CRESS", "CRISPHEAD", "DRY", "DRY/BUSH", "DRY/POLE",
-            "DRY/SOUP", "FALL/WINTER", "FAVA", "FINOCCHIO", "FLATLEAF", "FLOUR", "GERMAN", "GOLD", "HOT", "HOT/SWEET",
-            "ICELAND", "LOOSELEAF", "MESCLUN", "MEXICAN (TITHONIA)", "NAPA", "OAKLEAF", "ORNAMENTAL", "PASTE",
-            "PEARL", "PEONY", "PICKLING", "PIE", "POPPING", "PURPUREA", "RAINBOW", "RAPINI", "RED", "ROMAINE",
-            "SACRED BASIL", "SALADETTE", "SCALLION", "SHALLOT", "SHELLING", "SHIRLEY", "SHUNGIKU", "SIBERIAN",
-            "SLICER", "SLICER/SAUCER", "SNAP", "SNAP/BUSH", "SNAP/CLIMBING", "SNAP/DWARF", "SNAP/POLE", "SNOW",
-            "SORREL", "SPECIALTY", "STORAGE", "SUMMER", "SUMMER/ZUCCHINI", "SWEET", "SWISS", "TRAILING",
-            "WATERMELON", "WINTER"]
+SUBTYPES = ["AMARANTH", "BREADSEED", "CALIFORNIA", "CHINA", "CHINESE", "FLATLEAF", "ICELAND", "MEXICAN (TITHONIA)", 
+            "ORNAMENTAL","PEARL", "PEONY", "PURPUREA", "SACRED BASIL", "SHIRLEY", "SIBERIAN","TRAILING"]
 
-CATEGORIES = ["Vegetables", "Flowers", "Herbs"]
+CATEGORIES = ["Flowers", "Herbs"]
 
