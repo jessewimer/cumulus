@@ -8,7 +8,7 @@ from django.http import JsonResponse
 import json
 from stores.models import StoreOrder
 from products.models import Product, Variety
-from uprising.utils.auth import is_employee
+from cumulus.utils.auth import is_employee
 import os
 from datetime import datetime
 import io

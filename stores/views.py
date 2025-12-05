@@ -19,7 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from django.http.request import RawPostDataException
-from uprising.utils.auth import is_employee
+from cumulus.utils.auth import is_employee
 from django.contrib.admin.views.decorators import user_passes_test
 
 

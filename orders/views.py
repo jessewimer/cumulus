@@ -14,7 +14,7 @@ import io
 from django.views.decorators.http import require_http_methods
 import requests
 from django.contrib.auth.decorators import login_required, user_passes_test
-from uprising.utils.auth import is_employee
+from cumulus.utils.auth import is_employee
 import pandas as pd
 from products.models import Product, MiscProduct
 from django.db import transaction
@@ -27,12 +27,12 @@ from django.utils.timezone import localtime
 from io import BytesIO
 
 # ReportLab imports
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+# from reportlab.lib.pagesizes import letter
+# from reportlab.lib.units import inch
+# from reportlab.lib import colors
+# from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+# from reportlab.lib.enums import TA_CENTER
+# from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
 
 

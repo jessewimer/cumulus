@@ -13,7 +13,7 @@ from lots.models import Grower, Lot, RetiredLot, StockSeed, Germination, GermSam
 from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Case, When, IntegerField, Max, Sum, F, CharField, Value, Q
 from django.db.models.functions import Concat
-from uprising.utils.auth import is_employee
+from cumulus.utils.auth import is_employee
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
@@ -187,7 +187,7 @@ def view_variety(request, sku_prefix=None):  # Add optional parameter
         last_selected_entry = LastSelected.objects.filter(user=user).last()
         variety_obj = (
             last_selected_entry.variety if last_selected_entry 
-            else Variety.objects.get(pk="BEA-CA")
+            else Variety.objects.get(pk="SWP-KR")
         )
         # Redirect to URL with variety
         # return redirect('view_variety', sku_prefix=variety_obj.sku_prefix)
@@ -197,9 +197,7 @@ def view_variety(request, sku_prefix=None):  # Add optional parameter
     
     # --- All varieties ---
     # Exclude base component mixes (MIX-LB, MIX-SB, MIX-MB)
-    varieties = Variety.objects.exclude(
-        sku_prefix__in=['MIX-LB', 'MIX-SB', 'MIX-MB']
-    ).order_by('veg_type', 'sku_prefix')
+    varieties = Variety.objects.order_by('veg_type', 'sku_prefix')
     
     # --- Build all_vars dict for front-end dropdown (JS-friendly) ---
     all_vars = {
