@@ -21,9 +21,9 @@ DATABASE_USER = config('DATABASE_USER')
 ENVIRONMENT = config('ENVIRONMENT', default='development')
 
 if ENVIRONMENT == 'production':
-    WSGI_APPLICATION = "uprising.wsgi.application"
+    WSGI_APPLICATION = "cumulus.wsgi.application"
     DEBUG = False
-    ALLOWED_HOSTS = ['uprising.pythonanywhere.com']
+    ALLOWED_HOSTS = ['cumulus.pythonanywhere.com']
     # Production-only settings here, e.g.:
     DATABASES = {
         'default': {
@@ -31,7 +31,7 @@ if ENVIRONMENT == 'production':
             'NAME': DATABASE_NAME,
             'USER': DATABASE_USER,
             'PASSWORD': DATABASE_PASSWORD,
-            'HOST': 'uprising.mysql.pythonanywhere-services.com',
+            'HOST': 'cumulus.mysql.pythonanywhere-services.com',
             'PORT': '3306',  # Leave empty for the default MySQL port (3306)
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     'office.apps.OfficeConfig',
     'lots.apps.LotsConfig',
-    'axes',
+    # 'axes',
 ]
 
 MIDDLEWARE = [
@@ -76,11 +76,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "uprising.middleware.MaintenanceModeMiddleware",
-    'axes.middleware.AxesMiddleware',
+    # "uprising.middleware.MaintenanceModeMiddleware",
+    # 'axes.middleware.AxesMiddleware',
 ]
 
-ROOT_URLCONF = "uprising.urls"
+ROOT_URLCONF = "cumulus.urls"
 
 TEMPLATES = [
     {
@@ -155,17 +155,17 @@ CSP_CONNECT_SRC = ("'self'", "http://localhost:8000")  # Add your domain or sour
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',
+    # 'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
 # Axes config
-AXES_FAILURE_LIMIT = 3
-AXES_COOLOFF_TIME = 0.5  # 30 minutes
-AXES_RESET_ON_SUCCESS = True
-AXES_LOCK_OUT_BY_USER = True
-AXES_LOCK_OUT_BY_IP = True
-AXES_LOCKOUT_TEMPLATE = 'axes/lockout.html' 
+# AXES_FAILURE_LIMIT = 3
+# AXES_COOLOFF_TIME = 0.5  # 30 minutes
+# AXES_RESET_ON_SUCCESS = True
+# AXES_LOCK_OUT_BY_USER = True
+# AXES_LOCK_OUT_BY_IP = True
+# AXES_LOCKOUT_TEMPLATE = 'axes/lockout.html' 
 
 # FOR_YEAR might be for germ samples mostly??
 FOR_YEAR = 26
