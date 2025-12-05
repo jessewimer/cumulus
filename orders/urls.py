@@ -13,7 +13,7 @@ urlpatterns = [
     path('generate-pdf/<int:order_id>/', views.generate_order_pdf, name='generate_order_pdf'),
     
     # URL patterns for online order(s)
-    path('process-orders/', views.process_orders, name='process_orders'),
+    # path('process-orders/', views.process_orders, name='process_orders'),
     path('reprint-packing-slip/<str:order_id>/', views.reprint_packing_slip, name='reprint_packing_slip'), 
     path('reprocess-order/<str:order_id>/', views.reprocess_order, name='reprocess_order'),
 
