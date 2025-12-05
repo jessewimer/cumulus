@@ -15,7 +15,7 @@ import io
 from django.http import JsonResponse
 
 from django.views.decorators.http import require_http_methods
-import pandas as pd
+# import pandas as pd
 
 # Handles requests from the admin user to edit the available products for a store
 @login_required(login_url='/office/login/')
@@ -163,129 +163,129 @@ def edit_products(request):
         }
         return render(request, 'products/edit_products.html', context)
 
-@login_required(login_url='/office/login/')
-@user_passes_test(is_employee)
-@require_http_methods(["POST"])
-def shopify_inventory(request):
-    """
-    Handle Shopify inventory CSV upload and processing
-    """
-    try:
+# @login_required(login_url='/office/login/')
+# @user_passes_test(is_employee)
+# @require_http_methods(["POST"])
+# def shopify_inventory(request):
+#     """
+#     Handle Shopify inventory CSV upload and processing
+#     """
+#     try:
 
-        uploaded_file = request.FILES.get('csv_file')
-        df = pd.read_csv(uploaded_file, dtype=str)
+#         uploaded_file = request.FILES.get('csv_file')
+#         df = pd.read_csv(uploaded_file, dtype=str)
 
-        # Check if bulk inventory was requested
-        prefix = request.POST.get('sku_prefix')
-        if prefix:
-            # TODO: Implement bulk inventory processing logic her
+#         # Check if bulk inventory was requested
+#         prefix = request.POST.get('sku_prefix')
+#         if prefix:
+#             # TODO: Implement bulk inventory processing logic her
 
-            active_varieties = Variety.objects.filter(sku_prefix__startswith=prefix, active=True)
-            print(f"Active varieties: {active_varieties}")
+#             active_varieties = Variety.objects.filter(sku_prefix__startswith=prefix, active=True)
+#             print(f"Active varieties: {active_varieties}")
 
-            if not active_varieties.exists():
-                return JsonResponse({
-                    'message': f"No products found with SKU prefix '{prefix}'",
-                    'type_inventory': {}
-                })
+#             if not active_varieties.exists():
+#                 return JsonResponse({
+#                     'message': f"No products found with SKU prefix '{prefix}'",
+#                     'type_inventory': {}
+#                 })
 
-            inventory_dict = {}
+#             inventory_dict = {}
 
-            for variety in active_varieties:
-                sku_prefix = variety.sku_prefix
-                inventory_dict[sku_prefix] = {"variety": variety.var_name}
+#             for variety in active_varieties:
+#                 sku_prefix = variety.sku_prefix
+#                 inventory_dict[sku_prefix] = {"variety": variety.var_name}
 
-                for product in variety.products.all():  # assuming reverse FK is `products`
-                    sku = f"{sku_prefix}-{product.sku_suffix}"
+#                 for product in variety.products.all():  # assuming reverse FK is `products`
+#                     sku = f"{sku_prefix}-{product.sku_suffix}"
 
-                    # safely look up the product in the DataFrame
-                    product_row = df[df["Variant SKU"].str.startswith(sku, na=False)]
-                    if product_row.empty:
-                        continue
+#                     # safely look up the product in the DataFrame
+#                     product_row = df[df["Variant SKU"].str.startswith(sku, na=False)]
+#                     if product_row.empty:
+#                         continue
 
-                    # check if product is tracked by Shopify
-                    if product_row["Variant Inventory Tracker"].values[0] != "shopify":
-                        inv_qty = "NOT TRACKED"
-                    else:
-                        inv_qty = product_row["Variant Inventory Qty"].values[0]
+#                     # check if product is tracked by Shopify
+#                     if product_row["Variant Inventory Tracker"].values[0] != "shopify":
+#                         inv_qty = "NOT TRACKED"
+#                     else:
+#                         inv_qty = product_row["Variant Inventory Qty"].values[0]
 
-                    inventory_dict[sku_prefix][sku] = inv_qty
+#                     inventory_dict[sku_prefix][sku] = inv_qty
 
-            return JsonResponse({
-                'message': 'Bulk inventory processed successfully',
-                'type_inventory': inventory_dict
-            })
+#             return JsonResponse({
+#                 'message': 'Bulk inventory processed successfully',
+#                 'type_inventory': inventory_dict
+#             })
 
-        else:
+#         else:
 
-            pkt_threshold = request.POST.get('pkt_threshold')
-            pkt_threshold = int(pkt_threshold)
+#             pkt_threshold = request.POST.get('pkt_threshold')
+#             pkt_threshold = int(pkt_threshold)
    
-            # Clean & prepare columns
-            df["Variant Inventory Qty"] = (
-                pd.to_numeric(df["Variant Inventory Qty"], errors="coerce")
-                .fillna(0)
-                .astype(int)
-            )
+#             # Clean & prepare columns
+#             df["Variant Inventory Qty"] = (
+#                 pd.to_numeric(df["Variant Inventory Qty"], errors="coerce")
+#                 .fillna(0)
+#                 .astype(int)
+#             )
 
-            df["prefix"] = df["Variant SKU"].str[:6].fillna("")
+#             df["prefix"] = df["Variant SKU"].str[:6].fillna("")
 
-            # Filter shopify-tracked items
-            shop = df[df["Variant Inventory Tracker"] == "shopify"]
+#             # Filter shopify-tracked items
+#             shop = df[df["Variant Inventory Tracker"] == "shopify"]
 
-            # Low inventory packets
-            pkts = shop[shop["Variant SKU"].str.contains("pkt", na=False)]
+#             # Low inventory packets
+#             pkts = shop[shop["Variant SKU"].str.contains("pkt", na=False)]
 
-            low_pkts = pkts[(pkts["Variant Inventory Qty"] <= pkt_threshold) & (pkts["Variant Inventory Qty"] >= 0)]
+#             low_pkts = pkts[(pkts["Variant Inventory Qty"] <= pkt_threshold) & (pkts["Variant Inventory Qty"] >= 0)]
 
-            prefix_to_variety = {
-                v.sku_prefix: v.var_name for v in Variety.objects.all()
-            }
+#             prefix_to_variety = {
+#                 v.sku_prefix: v.var_name for v in Variety.objects.all()
+#             }
             
-            variety_inventory = {}
-            for _, row in low_pkts.iterrows():
-                prefix = row["prefix"]
-                qty = row["Variant Inventory Qty"]
-                variety_name = prefix_to_variety.get(prefix, f"Unknown ({prefix})")
+#             variety_inventory = {}
+#             for _, row in low_pkts.iterrows():
+#                 prefix = row["prefix"]
+#                 qty = row["Variant Inventory Qty"]
+#                 variety_name = prefix_to_variety.get(prefix, f"Unknown ({prefix})")
 
-                variety_inventory[variety_name] = qty
+#                 variety_inventory[variety_name] = qty
 
-            # ============ BULK INVENTORY SPLIT CHECK ============ #
-            # Filter bulk SKUs (non-packets)
-            bulk = shop[
-                (~shop["Variant SKU"].str.contains("pkt", na=False))
-                & shop["Variant SKU"].notna()
-            ]
+#             # ============ BULK INVENTORY SPLIT CHECK ============ #
+#             # Filter bulk SKUs (non-packets)
+#             bulk = shop[
+#                 (~shop["Variant SKU"].str.contains("pkt", na=False))
+#                 & shop["Variant SKU"].notna()
+#             ]
 
-            # Build a simple dict of bulk SKUs needing split
-            split_dict = {}
+#             # Build a simple dict of bulk SKUs needing split
+#             split_dict = {}
 
-            for prefix, grp in bulk.groupby("prefix", sort=False):
-                qtys = grp["Variant Inventory Qty"].tolist()
+#             for prefix, grp in bulk.groupby("prefix", sort=False):
+#                 qtys = grp["Variant Inventory Qty"].tolist()
                 
-                # Check if any non-final zero needs splitting
-                for idx, q in enumerate(qtys[:-1]):
-                    if q == 0 and any(q2 > 0 for q2 in qtys[idx + 1 :]):
-                        # lookup variety
-                        variety = Variety.objects.filter(sku_prefix=prefix).first()
-                        if variety:
-                            split_dict[variety.var_name] = variety.veg_type
-                        else:
-                            split_dict[f"Unknown ({prefix})"] = "Unknown"
-                        break
-            print(f"Bulk SKUs needing splitting: {split_dict}")
+#                 # Check if any non-final zero needs splitting
+#                 for idx, q in enumerate(qtys[:-1]):
+#                     if q == 0 and any(q2 > 0 for q2 in qtys[idx + 1 :]):
+#                         # lookup variety
+#                         variety = Variety.objects.filter(sku_prefix=prefix).first()
+#                         if variety:
+#                             split_dict[variety.var_name] = variety.veg_type
+#                         else:
+#                             split_dict[f"Unknown ({prefix})"] = "Unknown"
+#                         break
+#             print(f"Bulk SKUs needing splitting: {split_dict}")
 
-            return JsonResponse({
-                'message': 'Packet inventory processed successfully',
-                'variety_inventory': variety_inventory,
-                'bulk_split_dict': split_dict
-            })
+#             return JsonResponse({
+#                 'message': 'Packet inventory processed successfully',
+#                 'variety_inventory': variety_inventory,
+#                 'bulk_split_dict': split_dict
+#             })
 
-    except KeyError as e:
-        print(">>> KeyError encountered:", str(e))
-        return JsonResponse({'error': f"Missing expected column in CSV: {str(e)}"}, status=400)
-    except Exception as e:
-        import traceback
-        print(">>> Unexpected error:", str(e))
-        print(traceback.format_exc())
-        return JsonResponse({'error': f"Unexpected error: {str(e)}"}, status=500)
+#     except KeyError as e:
+#         print(">>> KeyError encountered:", str(e))
+#         return JsonResponse({'error': f"Missing expected column in CSV: {str(e)}"}, status=400)
+#     except Exception as e:
+#         import traceback
+#         print(">>> Unexpected error:", str(e))
+#         print(traceback.format_exc())
+#         return JsonResponse({'error': f"Unexpected error: {str(e)}"}, status=500)
