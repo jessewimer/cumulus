@@ -17,7 +17,7 @@ project_path = os.path.abspath(os.path.join(current_path, '..'))
 sys.path.append(project_path)
 
 # Set the DJANGO_SETTINGS_MODULE
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "uprising.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cumulus.settings")
 django.setup()
 
 from lots.models import Grower, Lot, StockSeed, Inventory, GermSamplePrint, Germination, GerminationBatch, RetiredLot, LotNote, Growout
