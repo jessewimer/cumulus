@@ -49,7 +49,7 @@ function hidePasswordPopup() {
 function verifyPassword() {
     const password = document.getElementById('passwordInput').value;
     
-    if (password === 'uprising') {
+    if (password === 'cumulus') {
         console.log('Password correct!');
         console.log('Callback:', passwordCallback);
         console.log('Params:', passwordParams);

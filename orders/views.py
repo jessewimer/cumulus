@@ -1174,7 +1174,7 @@ def generate_order_pdf(request, order_id):
         )
 
         # Header
-        elements.append(Paragraph("UPRISING SEEDS", header_style))
+        elements.append(Paragraph("CUMULUS SEEDS", header_style))
         elements.append(Paragraph("Wholesale Order Summary", subheader_style))
         elements.append(Spacer(1, 20))
 
@@ -1313,10 +1313,9 @@ def generate_order_pdf(request, order_id):
 
          # Metadata callback
         def add_pdf_metadata(canvas, doc):
-            # clean_title = f"Uprising Order {order.order_number}"
             clean_title = f""
             canvas.setTitle(clean_title)
-            canvas.setAuthor("Uprising Seeds")
+            canvas.setAuthor("Cumulus Seeds")
             canvas.setSubject("Wholesale Order Summary")
 
         # Build PDF with metadata
@@ -1326,7 +1325,7 @@ def generate_order_pdf(request, order_id):
         buffer.close()
 
         response = HttpResponse(pdf_data, content_type="application/pdf")
-        clean_filename = f"Uprising Order {order.order_number}.pdf"
+        clean_filename = f"Cumulus Order {order.order_number}.pdf"
         response["Content-Disposition"] = f'inline; filename="{clean_filename}"'
         return response
 
@@ -1379,7 +1378,7 @@ def generate_order_pdf(request, order_id):
 #         )
 
 #         # Header
-#         elements.append(Paragraph("UPRISING SEEDS", header_style))
+#         elements.append(Paragraph("CUMULUS SEEDS", header_style))
 #         elements.append(Paragraph("Wholesale Order Summary", subheader_style))
 #         elements.append(Spacer(1, 20))
 
@@ -1510,8 +1509,8 @@ def generate_order_pdf(request, order_id):
 
 #         # Metadata callback
 #         def add_pdf_metadata(canvas, doc):
-#             canvas.setTitle(f"Uprising Seeds Order {order.order_number}")
-#             canvas.setAuthor("Uprising Seeds")
+#             canvas.setTitle(f"Cumulus Seeds Order {order.order_number}")
+#             canvas.setAuthor("Cumulus Seeds")
 #             canvas.setSubject("Wholesale Order Summary")
 
 #         # Build PDF with metadata
@@ -1522,7 +1521,7 @@ def generate_order_pdf(request, order_id):
 
 #         response = HttpResponse(pdf_data, content_type="application/pdf")
 #         response["Content-Disposition"] = (
-#             f'inline; filename="Uprising - {order.order_number}.pdf"'
+#             f'inline; filename="Cumulus - {order.order_number}.pdf"'
 #         )
 #         return response
 
@@ -1572,7 +1571,7 @@ def generate_order_pdf(request, order_id):
 #         )
 
 #         # Header
-#         elements.append(Paragraph("UPRISING SEEDS", header_style))
+#         elements.append(Paragraph("CUMULUS SEEDS", header_style))
 #         elements.append(Paragraph("Wholesale Order Summary", subheader_style))
 #         elements.append(Spacer(1, 20))
 
@@ -1682,7 +1681,7 @@ def generate_order_pdf(request, order_id):
 #         buffer.close()
 
 #         response = HttpResponse(pdf_data, content_type='application/pdf')
-#         response['Content-Disposition'] = f'inline; filename="Uprising - {order.order_number}.pdf"'
+#         response['Content-Disposition'] = f'inline; filename="Cumulus - {order.order_number}.pdf"'
 #         return response
 
 #     except Exception as e:

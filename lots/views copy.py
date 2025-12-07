@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
-from uprising.utils.auth import is_employee
+from cumulus.utils.auth import is_employee
 from .models import Lot, GerminationBatch, Germination
 import json
 from django.views.decorators.http import require_http_methods

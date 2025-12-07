@@ -970,7 +970,7 @@ def main_menu():
     while True:
         clear_screen()
         print("\n" + "="*60)
-        print(" "*15 + "UPRISING SEEDS - LOT MANAGER")
+        print(" "*15 + " CUMULUS SEEDS - LOT MANAGER")
         print("="*60)
         print("\n1.  Grower Management")
         print("2.  Lot Management")

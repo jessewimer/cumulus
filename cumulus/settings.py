@@ -76,7 +76,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "uprising.middleware.MaintenanceModeMiddleware",
+    # "cumulus.middleware.MaintenanceModeMiddleware",
     # 'axes.middleware.AxesMiddleware',
 ]
 

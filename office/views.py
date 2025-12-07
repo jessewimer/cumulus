@@ -25,64 +25,16 @@ from stores.models import WholesalePktPrice
 import math
 
 
-BASE_COMPONENT_MIXES = {
-    'MIX-LB': {
-        'name': 'Lettuce Mix',
-        'type': 'base',
-        'varieties': ['LET-HR', 'LET-FB', 'LET-GR', 'LET-CI', 'LET-FT', 'LET-AY', 'LET-MA', 'LET-RV', 'LET-EM'],
-    },
-    'MIX-SB': {
-        'name': 'Spicy Mix',
-        'type': 'base',
-        'varieties': ['GRE-AS', 'GRE-TA', 'GRE-RS', 'KAL-RF', 'KAL-RR', 'GRE-WC', 'CHA-RA', 'GRE-GF', 'GRE-MZ']
-    },
-    'MIX-MB': {
-        'name': 'Mild Mix',
-        'type': 'base',
-        'varieties': ['GRE-AS', 'GRE-TA', 'SPI-BE', 'KAL-RF', 'GRE-MZ', 'CHA-RA'] 
-    }
-}
+# BASE_COMPONENT_MIXES = {
 
-mix_prefixes = ['CAR-RA', 'BEE-3B', 'LET-MX', 'MIX-SP', 'MIX-MI', 'MIX-BR', 'FLO-ED']
+# }
 
-# Mix configurations
-FINAL_MIX_CONFIGS = {
-    'CAR-RA': {
-        'name': 'Rainbow Carrot Mix',
-        'varieties': ['CAR-SN', 'CAR-YE', 'CAR-DR']
-    },
-    'BEE-3B': {
-        'name': '3 Beet Mix',
-        'type': 'regular',
-        'varieties': ['BEE-TG', 'BEE-SH', 'BEE-CH']
-    },
-    'LET-MX': {
-        'name': 'Uprising Lettuce Mix',
-        'type': 'regular',
-        'varieties_prefix': 'LET',
-        'varieties_exclude': ['LET-MX']
-    },
-    'MIX-SP': {
-        'name': 'Uprising Spicy Mesclun',
-        'type': 'nested',
-        'base_components': ['MIX-LB', 'MIX-SB']  
-    },
-    'MIX-MI': {
-        'name': 'Uprising Mild Mesclun',
-        'type': 'nested',
-        'base_components': ['MIX-LB', 'MIX-MB']  
-    },
-    'MIX-BR': {
-        'name': 'Uprising Braising Mix',
-        'type': 'regular',
-        'varieties': []  # Fill in your varieties
-    },
-    'FLO-ED': {
-        'name': 'Edible Flower Mix',
-        'type': 'regular',
-        'varieties': ['GRE-TA', 'GRE-RS', 'GRE-PC', 'SPI-BE', 'SPI-WG', 'SPI-WB', 'KAL-RR', 'KAL-RF', 'KAL-DB', 'CHA-RA', 'GRE-MZ', 'GRE-GF'] 
-    }
-}
+# mix_prefixes = []
+
+# # Mix configurations
+# FINAL_MIX_CONFIGS = {
+
+# }
 
 
 @login_required(login_url='/office/login/')

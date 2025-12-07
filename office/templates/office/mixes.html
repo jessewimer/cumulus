@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mixes - Uprising Seeds</title>
+    <title>Mixes - Cumulus Seeds</title>
     <link rel="stylesheet" href="{% static 'office/css/base.css' %}">
     
     <style>
@@ -634,25 +634,9 @@
                 <option value="">Select a mix...</option>
                 
                 <optgroup label="Product Mixes">
-                    <option value="CAR-RA">Rainbow Carrot Mix</option>
-                    <option value="LET-MX">Uprising Lettuce Mix</option>
-                    <option value="BEE-3B">3 Beet Mix</option>  <!-- ✅ Fixed -->
-                    <option value="MIX-SP">Uprising Spicy Mesclun</option>  <!-- ✅ Fixed -->
-                    <option value="MIX-MI">Uprising Mild Mesclun</option>  <!-- ✅ Fixed -->
-                    <option value="MIX-BR">Uprising Braising Mix</option>  <!-- ✅ Fixed -->
-                    <option value="FLO-ED">Edible Flower Mix</option>
+                    <option value="MIX-BB">Bouquet Bundle</option>
                 </optgroup>
                 
-                <!-- <optgroup label="Component Mixes">
-                    <option value="lettuce-base">Lettuce Mix</option>
-                    <option value="spicy-base">Spicy Mix</option>
-                    <option value="mild-base">Mild Mix</option>
-                </optgroup> -->
-                <optgroup label="Component Mixes">
-                    <option value="MIX-LB">Lettuce Mix</option>
-                    <option value="MIX-SB">Spicy Mix</option>
-                    <option value="MIX-MB">Mild Mix</option>
-                </optgroup>
             </select>
         </div>
 
@@ -846,51 +830,18 @@
 
         // Add this validation configuration
         const MIX_VALIDATION_RULES = {
-            'CAR-RA': {  // Replace with actual SKU
+            'MIX-BB': {  // Replace with actual SKU
                 type: 'exact_varieties',
-                required: ['CAR-YE', 'CAR-SN', 'CAR-DR'],
-                message: 'Rainbow Carrot Mix requires exactly 1 each of: Yellow Carrot (CAR-YE), Snow White Carrot (CAR-SN), and Dragon Carrot (CAR-DR)'
+                // add the required variety SKUs for Bouquet Bundle
+                required: [''],
+                message: 'Bouquet Bundle requires exactly 1 each of: '
             },
-            'MIX-SP': {  // Replace with actual SKU
-                type: 'category_count',
-                required: {
-                    'spicy_base': 1,
-                    'lettuce_base': 1
-                },
-                message: 'Uprising Spicy Mix requires exactly 1 spicy base and 1 lettuce base'
-            },
-            'MIX-MI': {  // Replace with actual SKU
-                type: 'category_count',
-                required: {
-                    'mild_base': 1,
-                    'lettuce_base': 1
-                },
-                message: 'Uprising Mild Mix requires exactly 1 mild base and 1 lettuce base'
-            },
-            'BEE-3B': {  // Replace with actual SKU
-                type: 'exact_varieties',
-                required: ['BEE-TG', 'BEE-SH', 'BEE-CH'],
-                message: '3 Beet Mix requires exactly 1 each of: Touchstone Gold (BEE-TG), Shiraz (BEE-SH), and Chioggia (BEE-CH)'
-            }
+
         };
 
         // Add category mappings for varieties (you'll need to expand this with all your varieties)
         const VARIETY_CATEGORIES = {
-            // Spicy bases
-            'ARU-RO': 'spicy_base',
-            'MUS-OR': 'spicy_base',
-            'RAD-CH': 'spicy_base',
-            // Add more spicy varieties...
-            
-            // Mild bases
-            'SPL-SP': 'mild_base',
-            'BAS-GE': 'mild_base',
-            // Add more mild varieties...
-            
-            // Lettuce bases
-            'LET-GR': 'lettuce_base',
-            'LET-RE': 'lettuce_base',
-            // Add more lettuce varieties...
+
         };
 
         // Mix selector change

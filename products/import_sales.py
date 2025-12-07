@@ -14,7 +14,7 @@ project_path = os.path.abspath(os.path.join(current_path, '..'))
 # Add the project directory to the sys.path
 sys.path.append(project_path)
 # Set the DJANGO_SETTINGS_MODULE
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "uprising.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cumulus.settings")
 django.setup()
 
 from products.models import Product, Sales, MiscProduct, MiscSales

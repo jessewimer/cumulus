@@ -247,8 +247,8 @@ class Growout(models.Model):
 
 class MixLot(models.Model):
     """
-    Mixed lot like UO26A
-    - UO = grower (Uprising Organics)
+    Mixed lot like CS26A
+    - CS = grower (Cumulus Organics)
     - 26 = year
     - A = letter (increments for different blends)
     """
