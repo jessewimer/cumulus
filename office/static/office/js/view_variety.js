@@ -3781,7 +3781,7 @@ function findLotById(lotId) {
 }
 
 function showAddProductPopup() {
-    showPasswordPopup(proceedWithAddProduct, null);
+    proceedWithAddProduct();
 }
 
 function proceedWithAddProduct() {
