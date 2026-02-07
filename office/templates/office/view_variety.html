@@ -108,7 +108,147 @@
             <!-- Left Side: Tables Container -->
             <div class="tables-container">
                 <!-- Products Table -->
+
+                <!-- Products Table -->
                 <div class="table-section">
+                    {% if variety %}
+                    <div class="table-wrapper">
+                        <table class="data-table products-table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Product
+                                        <span class="add-icon" onclick="showAddProductPopup()">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                                            </svg>
+                                        </span>
+                                    </th>
+                                    <th>Lot</th>
+                                    <th>YTD Sales</th>
+                                    <th>Last Year Sales</th>
+                                    <th># Printed</th>
+                                    <th>
+                                        Env. Type
+                                        <span class="scoop-icon" onclick="showScoopSizesPopup()" title="View Scoop Sizes">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <!-- Handle -->
+                                                <line x1="2" y1="8" x2="10" y2="8"/>
+                                                <!-- Bowl (side view - like a J or cup shape) -->
+                                                <path d="M10 8 L10 16 C10 18 12 20 15 20 C18 20 20 18 20 16 L20 8 Z"/>
+                                            </svg>
+                                        </span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if products %}
+                                    {% for product in products %}
+                                        <tr data-product-id="{{ product.pk }}"
+                                            data-variety-name="{{ product.variety.var_name }}"
+                                            data-crop="{{ product.variety.crop|default:'' }}"
+                                            data-common-name="{{ product.variety.common_name|default:'' }}"
+                                            data-days="{{ product.variety.days|default:'' }}"
+                                            data-sku-suffix="{{ product.sku_suffix|default:'' }}"
+                                            data-pkg-size="{{ product.pkg_size|default:'' }}"
+                                            data-env-type="{{ product.env_type|default:'' }}"
+                                            data-alt-sku="{{ product.alt_sku|default:'' }}"
+                                            {% if is_mix %}
+                                                data-lot-code="{{ product.mix_lot.lot_code|default:'' }}"
+                                                data-germination="{{ product.mix_lot.get_current_germ_rate|default:'' }}"
+                                                data-lot-for-year="{{ packed_for_year }}"
+                                            {% else %}
+                                                data-lot-code="{% if product.lot %}{{ product.lot.get_four_char_lot_code }}{% endif %}"
+                                                data-germination="{% if product.lot %}{{ product.lot.get_most_recent_germ_percent }}{% endif %}"
+                                                data-lot-for-year="{% if product.lot %}{{ product.lot.get_most_recent_germ_for_year }}{% endif %}"
+                                            {% endif %}
+                                            data-lineitem-name="{{ product.lineitem_name|default:'' }}"
+                                            data-rack-location="{{ product.rack_location|default:'' }}"
+                                            data-env-multiplier="{{ product.env_multiplier|default:'' }}"
+                                            data-scoop-size="{{ product.scoop_size|default:'' }}"
+                                            data-print-back="{{ product.print_back|yesno:'true,false' }}"
+                                            data-is-sub-product="{{ product.is_sub_product|yesno:'true,false' }}"
+                                            data-rad-type="{{ product.variety.get_rad_type|default:'' }}"
+                                            data-desc1="{{ product.variety.desc_line1|default:'' }}"
+                                            data-desc2="{{ product.variety.desc_line2|default:'' }}"
+                                            data-desc3="{{ product.variety.desc_line3|default:'' }}"
+                                            data-back1="{{ product.variety.back1|default:'' }}"
+                                            data-back2="{{ product.variety.back2|default:'' }}"
+                                            data-back3="{{ product.variety.back3|default:'' }}"
+                                            data-back4="{{ product.variety.back4|default:'' }}"
+                                            data-back5="{{ product.variety.back5|default:'' }}"
+                                            data-back6="{{ product.variety.back6|default:'' }}"
+                                            data-back7="{{ product.variety.back7|default:'' }}"
+                                            data-lot-code="{% if product.lot %}{% if product.lot.grower and product.lot.year %}{{ product.lot.grower }}{{ product.lot.year }}{% if product.lot.harvest %}{{ product.lot.harvest }}{% endif %}{% endif %}{% endif %}"
+                                            data-germination="{% if product.lot %}{{ product.lot.get_most_recent_germ_percent|default:'' }}{% endif %}"
+                                            data-lot-for-year="{% if product.lot %}{{ product.lot.get_most_recent_germ_for_year|default:'' }}{% endif %}"
+                                            data-for-year="25"
+                                            data-last-print-date="{{ product.get_last_print_date }}">
+                                            <td>
+                                                <div class="product-cell-content">
+                                                    <span class="print-icon" onclick="showPrintPopup('{{ product.pk }}', '{{ product.variety.var_name|escapejs }} - {{ product.sku_suffix|escapejs }}')">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <polyline points="6,9 6,2 18,2 18,9"></polyline>
+                                                            <path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"></path>
+                                                            <polyline points="6,14 18,14 18,22 6,22 6,14"></polyline>
+                                                        </svg>
+                                                    </span>
+                                                    <span class="edit-icon" onclick="showProductActionsPopup('{{ product.pk }}')">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                        </svg>
+                                                    </span>
+                                                    <span class="product-sku">{{ product.sku_suffix|default:"--" }}</span>
+                                                </div>
+                                            </td>
+                                            {% if is_mix %}
+                                                <td class="lot-cell">
+                                                    <span class="lot-identifier">
+                                                        {% if product.mix_lot %}
+                                                            {{ product.mix_lot.lot_code }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                            {% else %}
+                                                <td class="lot-cell">
+                                                    <span class="lot-identifier">
+                                                        {% if product.lot %}
+                                                            {{ product.lot.get_four_char_lot_code }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </span>
+                                                </td>
+                                            {% endif %}
+              
+
+                
+                                            <td>{{ product.get_ytd_sales|default:"--" }}</td>
+                                            <td>{{ product.get_last_year_sales|default:"--" }}</td>
+                                            <td>{{ product.get_total_printed|default:"0" }}</td>
+                                            <td>{{ product.env_type|default:"--" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 20px; color: #999;">
+                                            No products yet. Click the + button above to add one.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+
+
+                {% comment %} <div class="table-section">
                     {% if products %}
                     <div class="table-wrapper">
                         <table class="data-table products-table">
@@ -223,19 +363,6 @@
                                             </td>
                                         {% endif %}
               
-
-                                        <!-- <td>
-                                            {% if product.lot %}
-                                                {% if product.lot.grower and product.lot.year %}
-                                                    {{ product.lot.grower }}{{ product.lot.year }}{% if product.lot.harvest %}{{ product.lot.harvest }}{% endif %}
-                                                {% else %}
-                                                    --
-                                                {% endif %}
-                                            {% else %}
-                                                --
-                                            {% endif %}
-                         
-                                        </td> -->
                                         <td>{{ product.get_ytd_sales|default:"--" }}</td>
                                         <td>{{ product.get_last_year_sales|default:"--" }}</td>
                                         <td>{{ product.get_total_printed|default:"0" }}</td>
@@ -250,7 +377,7 @@
                         No products found for this variety
                     </div>
                     {% endif %}
-                </div>
+                </div> {% endcomment %}
 
                  <!-- Lots Table -->
                 <div class="table-section">
