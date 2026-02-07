@@ -552,7 +552,8 @@ function changeProductLot(productId) {
 
 function editProduct(productId) {
     hideProductActionsPopup();
-    showPasswordPopup(proceedWithEditProduct, productId);
+    // showPasswordPopup(proceedWithEditProduct, productId);
+    proceedWithEditProduct(productId);
 }
 
 function proceedWithEditProduct(productId) {
@@ -3356,7 +3357,8 @@ function hideVarietyActionsPopup() {
 
 function editVarietyWithPassword() {
     hideVarietyActionsPopup();
-    showPasswordPopup(openEditVarietyPopup, null);
+    // showPasswordPopup(openEditVarietyPopup, null);
+    openEditVarietyPopup(null);
 }
 
 
