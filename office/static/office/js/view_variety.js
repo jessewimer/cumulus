@@ -2987,7 +2987,7 @@ function collectStockSeedPrintData(quantity) {
     try {
         // Get variety information
         const varietyName = document.getElementById('varietyName').textContent.trim();
-        const vegType = document.getElementById('varietyType').textContent.trim();
+        const crop = document.getElementById('cropFilter').textContent.trim();
         
         // Find the lot data using currentLotId
         const lotData = allLotsData.find(lot => lot.id == currentLotId);
@@ -3002,7 +3002,7 @@ function collectStockSeedPrintData(quantity) {
         
         return {
             variety: varietyName,
-            crop: vegType,
+            crop: crop,
             lot_number: lotNumber,
             quantity: quantity
         };

@@ -1061,11 +1061,11 @@
 
             // Reset all other filters to default whenever ANY store is selected (including "All Stores")
             const categoryFilter = document.getElementById('category-filter');
-            const vegtypeFilter = document.getElementById('vegtype-filter');
+            const cropFilter = document.getElementById('crop-filter');
             const viewCheckedFilter = document.getElementById('view-checked-filter');
             
             if (categoryFilter) categoryFilter.value = '';
-            if (vegtypeFilter) vegtypeFilter.value = '';
+            if (cropFilter) cropFilter.value = '';
             if (viewCheckedFilter) viewCheckedFilter.value = '';
 
             // Show/hide bulk action buttons only for "All Stores"
@@ -1097,14 +1097,14 @@
         function filterTable() {
             const storeFilter = document.getElementById('store-filter').value;
             const categoryFilter = document.getElementById('category-filter').value.toLowerCase();
-            const vegtypeFilter = document.getElementById('vegtype-filter').value.toLowerCase();
+            const cropFilter = document.getElementById('crop-filter').value.toLowerCase();
             const viewCheckedFilter = document.getElementById('view-checked-filter').value;
 
             const rows = document.querySelectorAll('.table-row');
 
             rows.forEach(row => {
                 const categoryData = row.getAttribute('data-category').toLowerCase();
-                const vegtypeData = row.getAttribute('data-veg-type').toLowerCase();
+                const cropData = row.getAttribute('data-crop').toLowerCase();
                 const checkbox = row.querySelector('.product-checkbox');
                 const isChecked = checkbox ? checkbox.checked : false;
                 
@@ -1115,8 +1115,8 @@
                     showRow = false;
                 }
 
-                // Veg type filter
-                if (vegtypeFilter && vegtypeData !== vegtypeFilter) {
+                // Crop filter
+                if (cropFilter && cropData !== cropFilter) {
                     showRow = false;
                 }
 
@@ -1325,16 +1325,16 @@
             rows.sort(function(row1, row2) {
                 const category1 = row1.getAttribute('data-category').toLowerCase();
                 const category2 = row2.getAttribute('data-category').toLowerCase();
-                const vegType1 = row1.cells[2].textContent;
-                const vegType2 = row2.cells[2].textContent;
+                const crop1 = row1.cells[2].textContent;
+                const crop2 = row2.cells[2].textContent;
                 const subType1 = row1.cells[3].textContent;
                 const subType2 = row2.cells[3].textContent;
 
                 if (categoryOrder[category1] !== categoryOrder[category2]) {
                     return categoryOrder[category1] - categoryOrder[category2];
                 }
-                if (vegType1 !== vegType2) {
-                    return vegType1.localeCompare(vegType2);
+                if (crop1 !== crop2) {
+                    return crop1.localeCompare(crop2);
                 }
                 return subType1.localeCompare(subType2);
             });
@@ -1406,9 +1406,9 @@
                 categoryFilter.addEventListener('change', filterTable);
             }
 
-            const vegtypeFilter = document.getElementById('vegtype-filter');
-            if (vegtypeFilter) {
-                vegtypeFilter.addEventListener('change', filterTable);
+            const cropFilter = document.getElementById('crop-filter');
+            if (cropFilter) {
+                cropFilter.addEventListener('change', filterTable);
             }
 
             const viewCheckedFilter = document.getElementById('view-checked-filter');

@@ -7,7 +7,7 @@ let appData = {
     germYear: null,
     categories: [],
     groups: [],
-    vegTypes: []
+    crops: []
 };
 let currentBulkJob = null; 
 let currentPrintJob = null;
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupEventListeners() {
     document.getElementById('categoryFilter').addEventListener('change', applyFilters);
     document.getElementById('groupFilter').addEventListener('change', applyFilters);
-    document.getElementById('vegTypeFilter').addEventListener('change', applyFilters);
+    document.getElementById('cropFilter').addEventListener('change', applyFilters);
     document.getElementById('websiteFilter').addEventListener('change', applyFilters);
     document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
     document.getElementById('modalCancel').addEventListener('click', closeModal);
@@ -184,7 +184,7 @@ function processLoadedData(data) {
     appData.germYear = data.germ_year;
     appData.categories = data.categories;
     appData.groups = data.groups;
-    appData.vegTypes = data.crops;
+    appData.crops = data.crops;
     
     setupTable();
     populateFilters();
@@ -209,12 +209,11 @@ function setupTable() {
 function populateFilters() {
     const categorySelect = document.getElementById('categoryFilter');
     const groupSelect = document.getElementById('groupFilter');
-    const vegTypeSelect = document.getElementById('vegTypeFilter');
+    const cropSelect = document.getElementById('cropFilter');
 
     categorySelect.innerHTML = '<option value="">All Categories</option>';
     groupSelect.innerHTML = '<option value="">All Groups</option>';
-    vegTypeSelect.innerHTML = '<option value="">All Veg Types</option>';
-
+    cropSelect.innerHTML = '<option value="">All Crops</option>';
     appData.categories.forEach(category => {
         if (category) {
             const option = document.createElement('option');
@@ -233,12 +232,12 @@ function populateFilters() {
         }
     });
 
-    appData.vegTypes.forEach(vegType => {
-        if (vegType) {
+    appData.crops.forEach(crop => {
+        if (crop) {
             const option = document.createElement('option');
-            option.value = vegType;
-            option.textContent = vegType;
-            vegTypeSelect.appendChild(option);
+            option.value = crop;
+            option.textContent = crop;
+            cropSelect.appendChild(option);
         }
     });
 }
@@ -247,7 +246,7 @@ function populateFilters() {
 function applyFilters() {
     const categoryFilter = document.getElementById('categoryFilter').value;
     const groupFilter = document.getElementById('groupFilter').value;
-    const vegTypeFilter = document.getElementById('vegTypeFilter').value;
+    const cropFilter = document.getElementById('cropFilter').value;
     const websiteFilter = document.getElementById('websiteFilter').value; // ADD THIS
 
     appData.filteredLots = appData.allLots.filter(lot => {
@@ -259,7 +258,7 @@ function applyFilters() {
         
         return (!categoryFilter || lot.category === categoryFilter) &&
                 (!groupFilter || lot.group === groupFilter) &&
-                (!vegTypeFilter || lot.crop === vegTypeFilter) &&
+                (!cropFilter || lot.crop === cropFilter) &&
                 websiteMatch; // ADD THIS
     });
 
@@ -270,7 +269,7 @@ function applyFilters() {
 function clearFilters() {
     document.getElementById('categoryFilter').value = '';
     document.getElementById('groupFilter').value = '';
-    document.getElementById('vegTypeFilter').value = '';
+    document.getElementById('cropFilter').value = '';
     document.getElementById('websiteFilter').value = '';
     appData.filteredLots = [...appData.allLots];
     renderTable();
