@@ -181,21 +181,10 @@ function setupSearch() {
             const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(query);
             const matchesCrop = data.crop && data.crop.toLowerCase().includes(query);
             
-            if (matchesCommonSpelling || matchesCrop || matchesVegType) {
+            if (matchesCommonSpelling || matchesCrop) {
                 matches.push([skuPrefix, data]);
             }
         }
-        // // Only search through the common_spelling keys
-        // const matches = [];
-        
-        // for (const [skuPrefix, data] of Object.entries(allVarieties)) {
-        //     const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(query);
-            
-        //     if (matchesCommonSpelling) {
-        //         matches.push([skuPrefix, data]);
-        //     }
-        // }
-        // console.log('Found matches:', matches.length);
 
         if (matches.length > 0) {
 
