@@ -166,10 +166,25 @@ function setupSearch() {
     const searchDropdown = document.getElementById('searchDropdown');
 
     searchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
-        // console.log('Searching for:', query);
+        const query = this.value.trim();
+        const queryLower = query.toLowerCase();
         
-        if (query.length < 2) {
+        // Special case: show all varieties if user types exactly "*"
+        if (query === '*') {
+            const matches = Object.entries(allVarieties);
+            
+            searchDropdown.innerHTML = matches.map(([skuPrefix, data]) => `
+                <div class="dropdown-item" onclick="selectVariety('${skuPrefix}')">
+                    <div class="dropdown-variety-name">${data.var_name || data.common_spelling}</div>
+                    <div class="dropdown-variety-type">${data.crop || ''}</div>
+                </div>
+            `).join('');
+            searchDropdown.classList.add('show');
+            return;
+        }
+        
+        // Normal search behavior
+        if (queryLower.length < 2) {
             searchDropdown.classList.remove('show');
             return;
         }
@@ -178,8 +193,8 @@ function setupSearch() {
         const matches = [];
 
         for (const [skuPrefix, data] of Object.entries(allVarieties)) {
-            const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(query);
-            const matchesCrop = data.crop && data.crop.toLowerCase().includes(query);
+            const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(queryLower);
+            const matchesCrop = data.crop && data.crop.toLowerCase().includes(queryLower);
             
             if (matchesCommonSpelling || matchesCrop) {
                 matches.push([skuPrefix, data]);
@@ -200,6 +215,41 @@ function setupSearch() {
             searchDropdown.classList.add('show');
         }
     });
+    // searchInput.addEventListener('input', function() {
+    //     const query = this.value.toLowerCase().trim();
+    //     // console.log('Searching for:', query);
+        
+    //     if (query.length < 2) {
+    //         searchDropdown.classList.remove('show');
+    //         return;
+    //     }
+
+    //     // Search through common_spelling, crop
+    //     const matches = [];
+
+    //     for (const [skuPrefix, data] of Object.entries(allVarieties)) {
+    //         const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(query);
+    //         const matchesCrop = data.crop && data.crop.toLowerCase().includes(query);
+            
+    //         if (matchesCommonSpelling || matchesCrop) {
+    //             matches.push([skuPrefix, data]);
+    //         }
+    //     }
+
+    //     if (matches.length > 0) {
+
+    //         searchDropdown.innerHTML = matches.map(([skuPrefix, data]) => `
+    //             <div class="dropdown-item" onclick="selectVariety('${skuPrefix}')">
+    //                 <div class="dropdown-variety-name">${data.var_name || data.common_spelling}</div>
+    //                 <div class="dropdown-variety-type">${data.crop || ''}</div>
+    //             </div>
+    //         `).join('');
+    //         searchDropdown.classList.add('show');
+    //     } else {
+    //         searchDropdown.innerHTML = '<div class="dropdown-item"><div class="dropdown-variety-name">No matches found</div></div>';
+    //         searchDropdown.classList.add('show');
+    //     }
+    // });
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
