@@ -3801,8 +3801,18 @@ function submitAddProduct(event) {
     const formData = new FormData();
     formData.append('variety_id', VARIETY_SKU_PREFIX);
     formData.append('sku_suffix', document.getElementById('productSkuSuffix').value);
-    formData.append('pkg_size', document.getElementById('productPkgSize').value);
-    formData.append('env_type', document.getElementById('productEnvType').value);
+
+    // formData.append('pkg_size', document.getElementById('productPkgSize').value);
+    // formData.append('env_type', document.getElementById('productEnvType').value);
+    const pkgSize = document.getElementById('productPkgSize').value;
+    if (pkgSize) {
+        formData.append('pkg_size', pkgSize);
+    }
+    const envType = document.getElementById('productEnvType').value;
+    if (envType) {
+        formData.append('env_type', envType);
+    }
+
     formData.append('alt_sku', document.getElementById('productAltSku').value);
     formData.append('lineitem_name', document.getElementById('productLineitemName').value);
     formData.append('rack_location', document.getElementById('productRackLocation').value);

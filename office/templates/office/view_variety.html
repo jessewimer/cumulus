@@ -1657,10 +1657,19 @@
                         <div class="error-message" id="sku_suffix_error"></div>
                     </div>
 
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="productPkgSize">Package Size</label>
                         <select id="productPkgSize" name="pkg_size" class="field-narrow">
                             <!-- <option value="">Package Size</option> -->
+                            {% for size in pkg_sizes %}
+                                <option value="{{ size }}">{{ size }}</option>
+                            {% endfor %}
+                        </select>
+                    </div> {% endcomment %}
+                    <div class="form-group">
+                        <label for="productPkgSize">Package Size</label>
+                        <select id="productPkgSize" name="pkg_size" class="field-narrow">
+                            <option value="">-- Not Set --</option>
                             {% for size in pkg_sizes %}
                                 <option value="{{ size }}">{{ size }}</option>
                             {% endfor %}
@@ -1682,10 +1691,19 @@
                         <input type="text" id="productRackLocation" name="rack_location" class="field-medium">
                     </div>
 
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="productEnvType">Envelope Type</label>
                         <select id="productEnvType" name="env_type" class="field-medium">
                             <!-- <option value="">Envelope Type</option> -->
+                            {% for env in env_types %}
+                                <option value="{{ env }}">{{ env }}</option>
+                            {% endfor %}
+                        </select>
+                    </div> {% endcomment %}
+                    <div class="form-group">
+                        <label for="productEnvType">Envelope Type</label>
+                        <select id="productEnvType" name="env_type" class="field-medium">
+                            <option value="">-- Not Set --</option>
                             {% for env in env_types %}
                                 <option value="{{ env }}">{{ env }}</option>
                             {% endfor %}
