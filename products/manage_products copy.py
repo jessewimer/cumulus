@@ -7,8 +7,6 @@ import csv
 from prettytable import PrettyTable
 from collections import Counter
 from django.db.models import Q, Sum, Max
-# import shopify
-import re
 
 # Get the current directory path
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -119,10 +117,7 @@ def print_var_sku_prefixes_and_categories():
 
 def print_varieties_with_no_photo_path():
     """List varieties missing photos"""
-    from django.db.models import Q
-    
-    # Check for both empty string AND null values
-    varieties = Variety.objects.filter(Q(photo_path="") | Q(photo_path__isnull=True))
+    varieties = Variety.objects.filter(photo_path="")
     
     if not varieties:
         print("\n✅ All varieties have photos!")
@@ -132,8 +127,7 @@ def print_varieties_with_no_photo_path():
     print(f"VARIETIES WITHOUT PHOTOS ({varieties.count()})")
     print("="*60)
     for var in varieties:
-        photo_status = "NULL" if var.photo_path is None else "empty string"
-        print(f"{var.sku_prefix:<15} {var.var_name or '--':<30} [{photo_status}]")
+        print(f"{var.sku_prefix:<15} {var.var_name or '--'}")
 
 def update_all_variety_photos():
     """Sets all variety 'photo' attributes to the correct file (webp or jpg)"""
@@ -175,66 +169,6 @@ def delete_variety_by_sku():
     except Variety.DoesNotExist:
         print(f"\n❌ No variety found with SKU prefix {sku_prefix}")
 
-def view_variety_lots():
-    """Look up all lots, germinations, and inventory for a variety"""
-    while True:
-        sku_prefix = input("\nEnter SKU prefix (or 'back' to return): ").strip().upper()
-        
-        if sku_prefix.lower() == 'back':
-            break
-            
-        try:
-            variety = Variety.objects.get(sku_prefix=sku_prefix)
-            print(f"\n{'='*80}")
-            print(f"VARIETY: {variety.sku_prefix} - {variety.var_name}")
-            print(f"{'='*80}")
-            
-            lots = Lot.objects.filter(variety=variety).order_by('-year', 'grower')
-            
-            if not lots.exists():
-                print("No lots found for this variety.")
-                continue
-            
-            for lot in lots:
-                print(f"\n{'-'*80}")
-                print(f"LOT: {lot.get_four_char_lot_code()} ({lot.grower.name if lot.grower else 'No grower'} - {lot.year})")
-                if hasattr(lot, 'retired_info'):
-                    print("  STATUS: RETIRED")
-                print(f"{'-'*80}")
-                
-                # Germination Records
-                germinations = lot.germinations.all().order_by('-test_date')
-                if germinations.exists():
-                    print("\n  GERMINATION RECORDS:")
-                    print(f"  {'Test Date':<12} {'For Year':<10} {'Rate':<8} {'Status':<10} {'Notes'}")
-                    print(f"  {'-'*76}")
-                    for germ in germinations:
-                        test_date = germ.test_date.strftime('%m/%d/%Y') if germ.test_date else '--'
-                        notes = (germ.notes[:30] + '...') if germ.notes and len(germ.notes) > 30 else (germ.notes or '--')
-                        print(f"  {test_date:<12} 20{germ.for_year:<8} {germ.germination_rate}%{'':<5} {germ.status:<10} {notes}")
-                else:
-                    print("\n  No germination records")
-                
-                # Inventory Records
-                inventory_records = lot.inventory.all().order_by('-inv_date')
-                if inventory_records.exists():
-                    print("\n  INVENTORY RECORDS:")
-                    print(f"  {'Date':<12} {'Weight (lbs)':<15} {'Smarties':<10} {'Notes'}")
-                    print(f"  {'-'*76}")
-                    for inv in inventory_records:
-                        inv_date = inv.inv_date.strftime('%m/%d/%Y')
-                        notes = (inv.notes[:30] + '...') if inv.notes and len(inv.notes) > 30 else (inv.notes or '--')
-                        print(f"  {inv_date:<12} {str(inv.weight):<15} {inv.smarties_ct:<10} {notes}")
-                else:
-                    print("\n  No inventory records")
-                
-                print()  # Extra line between lots
-            
-            input("\nPress Enter to continue...")
-            
-        except Variety.DoesNotExist:
-            print(f"Variety '{sku_prefix}' not found.")
-            
 def add_variety():
     """Add a new variety - PLACEHOLDER"""
     print("\n⚠️  ADD VARIETY - Function placeholder")
@@ -245,81 +179,13 @@ def add_variety():
     print("  - Upload photo")
 
 def edit_variety():
-    """Edit an existing variety."""
-    sku_prefix = input("\nEnter SKU prefix to edit: ").strip().upper()
-    
-    try:
-        variety = Variety.objects.get(sku_prefix=sku_prefix)
-    except Variety.DoesNotExist:
-        print(f"❌ No variety found with SKU prefix: {sku_prefix}")
-        return
-    
-    print(f"\n📝 Editing variety: {variety}")
-    print("Press Enter to keep current value, or enter new value\n")
-    
-    # Define fields to edit with their current values
-    fields = [
-        ('var_name', variety.var_name),
-        ('crop', variety.crop),
-        ('common_spelling', variety.common_spelling),
-        ('common_name', variety.common_name),
-        ('group', variety.group),
-        ('species', variety.species),
-        ('subtype', variety.subtype),
-        ('days', variety.days),
-        ('stock_qty', variety.stock_qty),
-        ('photo_path', variety.photo_path),
-        ('wholesale_rack_designation', variety.wholesale_rack_designation),
-        ('growout_needed', variety.growout_needed),
-        ('desc_line1', variety.desc_line1),
-        ('desc_line2', variety.desc_line2),
-        ('desc_line3', variety.desc_line3),
-        ('back1', variety.back1),
-        ('back2', variety.back2),
-        ('back3', variety.back3),
-        ('back4', variety.back4),
-        ('back5', variety.back5),
-        ('back6', variety.back6),
-        ('back7', variety.back7),
-        ('var_notes', variety.var_notes),
-        ('ws_notes', variety.ws_notes),
-        ('ws_description', variety.ws_description),
-        ('category', variety.category),
-    ]
-    
-    # Boolean fields
-    bool_fields = [
-        ('active', variety.active),
-        ('wholesale', variety.wholesale),
-        ('website_bulk', variety.website_bulk),
-        ('is_mix', variety.is_mix),
-    ]
-    
-    # Edit text/char fields
-    for field_name, current_value in fields:
-        display_value = current_value if current_value else "(empty)"
-        new_value = input(f"{field_name} [{display_value}]: ").strip()
-        if new_value:
-            setattr(variety, field_name, new_value)
-    
-    # Edit boolean fields
-    for field_name, current_value in bool_fields:
-        response = input(f"{field_name} [Current: {current_value}] (y/n or Enter to skip): ").strip().lower()
-        if response in ['y', 'yes']:
-            setattr(variety, field_name, True)
-        elif response in ['n', 'no']:
-            setattr(variety, field_name, False)
-    
-    # Confirm save
-    print("\n" + "="*50)
-    print(f"Ready to save changes to {variety.sku_prefix}")
-    confirm = input("Save changes? (y/n): ").strip().lower()
-    
-    if confirm in ['y', 'yes']:
-        variety.save()
-        print(f"✅ Successfully updated variety: {variety.sku_prefix}")
-    else:
-        print("❌ Changes discarded")
+    """Edit variety details - PLACEHOLDER"""
+    print("\n⚠️  EDIT VARIETY - Function placeholder")
+    print("This would allow you to:")
+    print("  - Select variety by SKU prefix")
+    print("  - Update any field")
+    print("  - Change active status")
+    print("  - Update photo path")
 
 def variety_menu():
     """Variety management submenu"""
@@ -336,10 +202,9 @@ def variety_menu():
         print("6.  Add new variety")
         print("7.  Edit variety")
         print("8.  Delete variety")
-        print("9.  View variety lots")
         print("0.  Back to main menu")
         
-        choice = get_choice("\nSelect option: ", ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+        choice = get_choice("\nSelect option: ", ['0', '1', '2', '3', '4', '5', '6', '7', '8'])
         
         if choice == '0':
             break
@@ -366,9 +231,6 @@ def variety_menu():
             pause()
         elif choice == '8':
             delete_variety_by_sku()
-            pause()
-        elif choice == '9':
-            view_variety_lots()
             pause()
 
 
@@ -433,79 +295,80 @@ def view_product_details():
         ws_label = " (Wholesale)" if sale.wholesale else ""
         print(f"  20{sale.year}: {sale.quantity} units{ws_label}")
 
+def view_lineitems():
+    """View all products with lineitem names"""
+    import pandas as pd
 
+    products = Product.objects.all().order_by(
+        'variety__sku_prefix', 'sku_suffix'
+    ).values('variety__sku_prefix', 'sku_suffix', 'lineitem_name')
 
+    df = pd.DataFrame(list(products))
+    print("\n")
+    print(df)
 
-def missing(field_name):
-    return Q(**{f"{field_name}__isnull": True}) | Q(**{field_name: ""})
-
-def view_missing_product_attributes():
-    sections = [
-        ("rack_location", "Missing Rack Locations", True),
-        ("lineitem_name", "Missing Line Item Names", True),
-        ("pkg_size", "Missing Package Sizes", True),
-        ("sku_suffix", "Missing SKU Suffixes", False),
-        ("env_type", "Missing Envelope Types", True),
-    ]
-
-    base_qs = (
-        Product.objects
-        .select_related("variety")
-        .order_by("variety__var_name", "sku_suffix")
+def view_products_without_lineitem():
+    """Display all products that do not have a lineitem name"""
+    products = Product.objects.filter(
+        is_sub_product=False
+    ).filter(
+        lineitem_name__isnull=True
+    ) | Product.objects.filter(
+        is_sub_product=False
+    ).filter(
+        lineitem_name=""
     )
-
-    for field, title, show_sku in sections:
-        print("\n" + "=" * len(title))
-        print(title)
-        print("=" * len(title))
-
-        qs = base_qs.filter(
-            Q(**{f"{field}__isnull": True}) |
-            Q(**{f"{field}": ""})
-        )
-
-        if not qs.exists():
-            print("✓ None missing")
-            continue
-
-        for product in qs:
-            variety_name = (
-                product.variety.var_name
-                if product.variety
-                else "(no variety)"
-            )
-
-            if show_sku:
-                sku = product.sku_suffix or "(no SKU)"
-                print(f"- {variety_name} — {sku}")
-            else:
-                print(f"- {variety_name}")
-
-        print(f"\nTotal: {qs.count()}")
+    products = products.select_related('variety').order_by('variety__sku_prefix', 'sku_suffix')
+    
+    if not products:
+        print("\n✅ All products have lineitem names assigned!")
+        return
+    
+    print("\n" + "="*100)
+    print(f"PRODUCTS WITHOUT LINEITEM NAMES ({products.count()})")
+    print("="*100)
+    print(f"{'SKU Prefix':<15} {'Suffix':<10} {'Pkg Size':<15} {'Variety Name':<40}")
+    print("-"*100)
+    
+    for prod in products:
+        variety_name = prod.variety.var_name or '--'
+        print(f"{prod.variety.sku_prefix:<15} {(prod.sku_suffix or '--'):<10} "
+              f"{(prod.pkg_size or '--'):<15} {variety_name:<40}")
+    
+    print(f"\nTotal: {products.count()} products without lineitem names")
 
 
-def view_bad_lineitems(output_file="bad_lineitems.csv"):
-    BAD_ENDING_RE = re.compile(r"\d+[a-zA-Z]+$")
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_path = os.path.join(script_dir, output_file)
-
-    bad_items = []
-
-    for product in Product.objects.values_list("id", "lineitem_name"):
-        product_id, name = product
-
-        if name and BAD_ENDING_RE.search(name):
-            bad_items.append((product_id, name))
-
-    with open(output_path, mode="w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["product_id", "lineitem_name"])
-        for row in bad_items:
-            writer.writerow(row)
-
-    print(f"Found {len(bad_items)} bad lineitems")
-    print("CSV written to:", output_path)
-
+def view_products_without_pkg_size():
+    """Display all products that do not have a pkg_size"""
+    products = Product.objects.filter(
+        pkg_size__isnull=True
+    ) | Product.objects.filter(
+        pkg_size=""
+    )
+    products = products.select_related('variety').order_by('variety__sku_prefix', 'sku_suffix')
+    
+    if not products:
+        print("\n✅ All products have pkg_size assigned!")
+        return
+    
+    table = PrettyTable()
+    table.field_names = ["SKU Prefix", "Suffix", "Lineitem Name", "Variety Name"]
+    table.align["SKU Prefix"] = "l"
+    table.align["Suffix"] = "l"
+    table.align["Lineitem Name"] = "l"
+    table.align["Variety Name"] = "l"
+    
+    for prod in products:
+        variety_name = prod.variety.var_name or '--'
+        lineitem = prod.lineitem_name or '--'
+        suffix = prod.sku_suffix or '--'
+        table.add_row([prod.variety.sku_prefix, suffix, lineitem, variety_name])
+    
+    print("\n" + "="*100)
+    print(f"PRODUCTS WITHOUT PKG_SIZE ({products.count()})")
+    print("="*100)
+    print(table)
+    print(f"\nTotal: {products.count()} products without pkg_size")
 
 
 def reset_all_website_bulk():
@@ -624,107 +487,28 @@ def find_pkt_products_with_wrong_print_back_setting():
     
     print(f"\nTotal: {products.count()} products found")
 
-
-def view_edit_products_with_bulk_pre_pack():
-    """Display and edit products with bulk_pre_pack > 0"""
-    while True:
-        products = Product.objects.filter(
-            bulk_pre_pack__gt=0
-        ).select_related('variety').order_by('variety__sku_prefix', 'sku_suffix')
-        
-        if not products:
-            print("\n✅ No products have bulk_pre_pack set!")
-            pause()
-            return
-        
-        # Create pretty table
-        table = PrettyTable()
-        table.field_names = ["#", "SKU Prefix", "Variety Name", "Suffix", "Bulk Pre-Pack"]
-        table.align["#"] = "r"
-        table.align["SKU Prefix"] = "l"
-        table.align["Variety Name"] = "l"
-        table.align["Suffix"] = "l"
-        table.align["Bulk Pre-Pack"] = "r"
-        
-        # Store products in a list for selection
-        product_list = list(products)
-        
-        print("\n" + "="*100)
-        print(f"PRODUCTS WITH BULK PRE-PACK ({len(product_list)})")
-        print("="*100)
-        
-        for idx, prod in enumerate(product_list, 1):
-            variety_name = prod.variety.var_name or '--'
-            # Truncate long variety names
-            if len(variety_name) > 35:
-                variety_name = variety_name[:32] + "..."
-            suffix = prod.sku_suffix or '--'
-            table.add_row([
-                idx,
-                prod.variety.sku_prefix,
-                variety_name,
-                suffix,
-                prod.bulk_pre_pack
-            ])
-        
-        print(table)
-        print("\nEnter product number to edit, or 0 to return")
-        
-        # Get user choice
-        try:
-            choice = input("\nSelect: ").strip()
-            if choice == '0':
-                break
-            
-            choice_num = int(choice)
-            if choice_num < 1 or choice_num > len(product_list):
-                print(f"\n❌ Invalid selection. Please choose 1-{len(product_list)} or 0")
-                pause()
-                continue
-            
-            # Get selected product
-            selected_product = product_list[choice_num - 1]
-            full_sku = f"{selected_product.variety.sku_prefix}-{selected_product.sku_suffix}"
-            
-            # Show current value and prompt for new value
-            print(f"\n{'='*60}")
-            print(f"EDIT BULK PRE-PACK: {full_sku}")
-            print(f"Variety: {selected_product.variety.var_name}")
-            print(f"{'='*60}")
-            print(f"Current bulk_pre_pack: {selected_product.bulk_pre_pack}")
-            
-            new_value = input("\nEnter new value (or press Enter to cancel): ").strip()
-            
-            if not new_value:
-                print("Edit cancelled")
-                pause()
-                continue
-            
-            try:
-                new_value_int = int(new_value)
-                if new_value_int < 0:
-                    print("\n❌ Value must be 0 or greater")
-                    pause()
-                    continue
-                
-                # Update the product
-                old_value = selected_product.bulk_pre_pack
-                selected_product.bulk_pre_pack = new_value_int
-                selected_product.save()
-                
-                print(f"\n✅ Updated {full_sku}: {old_value} → {new_value_int}")
-                pause()
-                
-            except ValueError:
-                print("\n❌ Invalid number. Please enter a valid integer")
-                pause()
-                continue
-                
-        except ValueError:
-            print("\n❌ Invalid input. Please enter a number")
-            pause()
-            continue
-
+def view_products_with_bulk_pre_pack():
+    """Display all products with bulk_pre_pack > 0"""
+    products = Product.objects.filter(
+        bulk_pre_pack__gt=0
+    ).select_related('variety').order_by('variety__sku_prefix', 'sku_suffix')
+    
+    if not products:
+        print("\n✅ No products have bulk_pre_pack set!")
+        return
+    
+    print("\n" + "="*100)
+    print(f"PRODUCTS WITH BULK PRE-PACK ({products.count()})")
+    print("="*100)
+    print(f"{'SKU Prefix':<15} {'Variety Name':<40} {'Suffix':<10} {'Bulk Pre-Pack':<15}")
+    print("-"*100)
+    
+    for prod in products:
+        variety_name = prod.variety.var_name or '--'
+        suffix = prod.sku_suffix or '--'
+        print(f"{prod.variety.sku_prefix:<15} {variety_name:<40} {suffix:<10} {prod.bulk_pre_pack:<15}")
+    
+    print(f"\nTotal: {products.count()} products with bulk pre-pack")
 
 def check_pkt_products_low_label_prints():
     """Check pkt products with low label prints that have active germination lots"""
@@ -942,279 +726,14 @@ def check_pkt_products_below_sales_percentage():
     print(f"\nNote: Threshold column shows {threshold_pct}% of previous year sales")
 
 
-
-# def find_bulk_products_low_prints():
-#     """Find bulk products with potentially low print numbers"""
-#     print("\n" + "="*80)
-#     print("FIND BULK PRODUCTS WITH LOW PRINT NUMBERS")
-#     print("="*80)
-    
-#     # Get year
-#     year_input = input("\nEnter year (e.g., 26 for 2026): ").strip()
-#     if not year_input:
-#         print("Year is required")
-#         return
-
-#     try:
-#         year = int(year_input)  # Keep as 2-digit
-#     except ValueError:
-#         print("Invalid year format")
-#         return
-    
-#     print(f"\nFetching Shopify inventory data...")
-    
-#     # Configure Shopify session
-#     session = shopify.Session(
-#         settings.SHOPIFY_SHOP_URL,
-#         settings.SHOPIFY_API_VERSION,
-#         settings.SHOPIFY_ACCESS_TOKEN
-#     )
-#     shopify.ShopifyResource.activate_session(session)
-    
-#     # Fetch all products from Shopify
-#     all_shopify_products = []
-#     since_id = 0
-    
-#     while True:
-#         shopify_products = shopify.Product.find(limit=250, since_id=since_id)
-#         if not shopify_products:
-#             break
-#         all_shopify_products.extend(shopify_products)
-#         since_id = shopify_products[-1].id
-#         if len(all_shopify_products) >= 2500:
-#             break
-    
-#     print(f"Fetched {len(all_shopify_products)} products from Shopify")
-    
-#     # Build inventory lookup by SKU
-#     shopify_inventory = {}
-#     for shopify_product in all_shopify_products:
-#         for variant in shopify_product.variants:
-#             if variant.sku:
-#                 is_tracked = variant.inventory_management == 'shopify'
-#                 shopify_inventory[variant.sku] = {
-#                     'quantity': variant.inventory_quantity if is_tracked else 'No limit',
-#                     'tracked': is_tracked
-#                 }
-    
-#     shopify.ShopifyResource.clear_session()
-    
-#     # Get bulk varieties (website_bulk = True)
-#     bulk_varieties = Variety.objects.filter(website_bulk=True)
-    
-#     print(f"\nFound {bulk_varieties.count()} varieties with website_bulk=True")
-#     print("\nAnalyzing products...")
-    
-#     # Collect data for each product
-#     results = []
-#     last_year = year - 1
-    
-#     for variety in bulk_varieties:
-#         django_products = variety.products.all()
-        
-#         for django_product in django_products:
-#             # Skip packet products
-#             if django_product.sku_suffix == 'pkt':
-#                 continue
-                
-#             # Build full SKU
-#             full_sku = f"{variety.sku_prefix}-{django_product.sku_suffix}" if django_product.sku_suffix else variety.sku_prefix
-            
-#             # Get Shopify inventory
-#             shopify_inv = shopify_inventory.get(full_sku, {})
-#             website_qty = shopify_inv.get('quantity', '--')
-            
-#             # Get last year sales - WITH DEBUGGING
-#             last_year_sales_query = django_product.sales.filter(year=last_year)
-#             last_year_sales = last_year_sales_query.aggregate(
-#                 total=Sum('quantity')
-#             )['total'] or 0
-            
-#             # DEBUG: Print first product's sales details
-#             if not results:  # Only for first product
-#                 print(f"\nDEBUG for {full_sku}:")
-#                 print(f"  Looking for year: {last_year}")
-#                 print(f"  Sales records found: {last_year_sales_query.count()}")
-#                 if last_year_sales_query.exists():
-#                     for sale in last_year_sales_query[:3]:  # Show first 3
-#                         print(f"    - Year: {sale.year}, Qty: {sale.quantity}, Wholesale: {sale.wholesale}")
-#                 else:
-#                     # Check if ANY sales exist for this product
-#                     all_sales = django_product.sales.all()
-#                     print(f"  Total sales records for this product: {all_sales.count()}")
-#                     if all_sales.exists():
-#                         print(f"  Years available: {list(all_sales.values_list('year', flat=True).distinct())}")
-            
-#             # Get total printed for this year
-#             total_printed = django_product.label_prints.filter(for_year=year).aggregate(
-#                 total=Sum('qty')
-#             )['total'] or 0
-            
-#             results.append({
-#                 'variety': variety.var_name or variety.sku_prefix,
-#                 'sku': full_sku,
-#                 'size': django_product.pkg_size or '--',
-#                 'website_inv': website_qty,
-#                 'last_year_sales': last_year_sales,
-#                 'printed_this_year': total_printed
-#             })
-    
-#     if not results:
-#         print("\nNo products found.")
-#         return
-    
-#     # Sort by printed this year (ascending - lowest first)
-#     results.sort(key=lambda x: x['printed_this_year'])
-    
-#     # Display results using PrettyTable
-#     table = PrettyTable()
-#     table.field_names = [
-#         'Variety',
-#         'SKU',
-#         'Size',
-#         'Website Inv',
-#         f'{last_year} Sales',
-#         f'{year} Printed'
-#     ]
-    
-#     for row in results:
-#         table.add_row([
-#             row['variety'],
-#             row['sku'],
-#             row['size'],
-#             row['website_inv'],
-#             row['last_year_sales'],
-#             row['printed_this_year']
-#         ])
-    
-#     # Align columns
-#     table.align['Variety'] = 'l'
-#     table.align['SKU'] = 'l'
-#     table.align['Size'] = 'l'
-#     table.align['Website Inv'] = 'r'
-#     table.align[f'{last_year} Sales'] = 'r'
-#     table.align[f'{year} Printed'] = 'r'
-    
-#     print("\n" + str(table))
-#     print(f"\nTotal products analyzed: {len(results)}")
-#     print(f"Sorted by {year} printed (lowest first)\n")
-
-
-
 def add_product():
-    """Add a new product to an existing variety"""
-    from products.models import Variety, Product
-    
-    print("\n" + "="*50)
-    print("ADD NEW PRODUCT")
-    print("="*50)
-    
-    # Step 1: Get SKU prefix
-    while True:
-        sku_prefix = input("\nEnter SKU prefix (or 'q' to quit): ").strip()
-        
-        if sku_prefix.lower() == 'q':
-            print("Cancelled.")
-            return
-        
-        if not sku_prefix:
-            print("❌ SKU prefix cannot be empty. Please try again.")
-            continue
-        
-        # Try to find the variety
-        try:
-            variety = Variety.objects.get(sku_prefix=sku_prefix)
-            break
-        except Variety.DoesNotExist:
-            print(f"❌ No variety found with SKU prefix '{sku_prefix}'")
-            retry = input("Try again? (y/n): ").strip().lower()
-            if retry != 'y':
-                print("Cancelled.")
-                return
-    
-    # Step 2: Display variety info and existing products
-    print("\n" + "-"*50)
-    print(f"📦 Variety: {variety.var_name or 'No name'}")
-    print(f"   SKU Prefix: {variety.sku_prefix}")
-    print(f"   Crop: {variety.crop or 'N/A'}")
-    print(f"   Subtype: {variety.subtype or 'N/A'}")
-    print("-"*50)
-    
-    # Get existing products for this variety
-    existing_products = Product.objects.filter(variety=variety).order_by('sku_suffix')
-    
-    if existing_products.exists():
-        print("\n📋 Existing Products:")
-        for i, product in enumerate(existing_products, 1):
-            lot_info = ""
-            if product.lot:
-                lot_info = f" (Lot: {product.lot.lot_code})"
-            elif product.mix_lot:
-                lot_info = f" (Mix Lot: {product.mix_lot.mix_lot_code})"
-            
-            print(f"   {i}. {product.variety.sku_prefix}-{product.sku_suffix or 'N/A'} "
-                  f"| Size: {product.pkg_size or 'N/A'}"
-                  f"{lot_info}")
-    else:
-        print("\n📋 No existing products for this variety")
-    
-    # Step 3: Confirm to continue
-    print("\n" + "-"*50)
-    continue_add = input("Continue adding a new product? (y/n): ").strip().lower()
-    
-    if continue_add != 'y':
-        print("Cancelled.")
-        return
-    
-    # Step 4: Get SKU suffix
-    print("\n" + "-"*50)
-    while True:
-        sku_suffix = input("Enter SKU suffix (e.g., 'pkt', 'oz', '4oz'): ").strip()
-        
-        if not sku_suffix:
-            print("❌ SKU suffix cannot be empty. Please try again.")
-            continue
-        
-        # Check if this suffix already exists for this variety
-        if Product.objects.filter(variety=variety, sku_suffix=sku_suffix).exists():
-            print(f"❌ A product with suffix '{sku_suffix}' already exists for this variety!")
-            retry = input("Try a different suffix? (y/n): ").strip().lower()
-            if retry != 'y':
-                print("Cancelled.")
-                return
-            continue
-        
-        break
-    
-    # Step 5: Create the product
-    try:
-        new_product = Product.objects.create(
-            variety=variety,
-            sku_suffix=sku_suffix,
-            # Other fields will be added via the UI
-        )
-        
-        print("\n" + "="*50)
-        print("✅ SUCCESS!")
-        print("="*50)
-        print(f"Created new product: {variety.sku_prefix}-{sku_suffix}")
-        print(f"Product ID: {new_product.id}")
-        print("\n💡 You can now edit additional fields (pkg_size, rack_location, etc.) in the UI")
-        print("="*50 + "\n")
-        
-    except Exception as e:
-        print(f"\n❌ Error creating product: {str(e)}")
-        import traceback
-        traceback.print_exc()
-
-# def add_product():
-#     """Add a new product - PLACEHOLDER"""
-#     print("\n⚠️  ADD PRODUCT - Function placeholder")
-#     print("This would allow you to:")
-#     print("  - Select variety")
-#     print("  - Enter SKU suffix and package size")
-#     print("  - Set envelope type and multiplier")
-#     print("  - Configure print settings")
+    """Add a new product - PLACEHOLDER"""
+    print("\n⚠️  ADD PRODUCT - Function placeholder")
+    print("This would allow you to:")
+    print("  - Select variety")
+    print("  - Enter SKU suffix and package size")
+    print("  - Set envelope type and multiplier")
+    print("  - Configure print settings")
 
 def edit_product():
     """Edit product details - PLACEHOLDER"""
@@ -1226,206 +745,12 @@ def edit_product():
     print("  - Toggle print_back flag")
 
 def delete_product():
-    """Delete a product with cascade handling"""
-    sku_prefix = input("\nEnter SKU prefix (e.g., BEA-RN): ").strip().upper()
-    
-    if not sku_prefix:
-        print("❌ SKU prefix is required")
-        return
-    
-    # Find all products matching the SKU prefix
-    products = Product.objects.filter(variety__sku_prefix=sku_prefix).select_related('variety')
-    
-    if not products.exists():
-        print(f"\n❌ No products found with SKU prefix '{sku_prefix}'")
-        return
-    
-    # Display all matching products
-    print(f"\n{'='*80}")
-    print(f"PRODUCTS FOR {sku_prefix}")
-    print(f"{'='*80}")
-    print(f"{'#':<4} {'SKU Suffix':<15} {'Package Size':<30}")
-    print("-"*80)
-    
-    product_list = list(products)
-    for idx, product in enumerate(product_list, 1):
-        print(f"{idx:<4} {product.sku_suffix or '--':<15} {product.pkg_size or '--':<30}")
-    
-    print(f"\nTotal: {len(product_list)} products")
-    
-    # Get user selection
-    selection = input("\nEnter product number to delete (or 'cancel'): ").strip()
-    
-    if selection.lower() == 'cancel':
-        print("Deletion cancelled")
-        return
-    
-    try:
-        idx = int(selection)
-        if idx < 1 or idx > len(product_list):
-            print(f"❌ Invalid selection. Please enter a number between 1 and {len(product_list)}")
-            return
-    except ValueError:
-        print("❌ Invalid input. Please enter a number")
-        return
-    
-    # Get the selected product
-    product = product_list[idx - 1]
-    full_sku = f"{product.variety.sku_prefix}-{product.sku_suffix}"
-    
-    # Show what will be deleted
-    print(f"\n{'='*80}")
-    print(f"PRODUCT TO DELETE: {full_sku}")
-    print(f"{'='*80}")
-    print(f"Variety: {product.variety.var_name or '--'}")
-    print(f"Package Size: {product.pkg_size or '--'}")
-    
-    # Check for related records
-    sales_count = product.sales.count()
-    label_prints_count = product.label_prints.count()
-    
-    print(f"\n⚠️  RELATED RECORDS THAT WILL BE DELETED:")
-    print(f"  - Sales records: {sales_count}")
-    print(f"  - Label print records: {label_prints_count}")
-    
-    if sales_count > 0 or label_prints_count > 0:
-        print(f"\n⚠️  WARNING: This product has {sales_count + label_prints_count} related records!")
-    
-    # Confirm deletion
-    print(f"\n⚠️  You are about to permanently delete product {full_sku} and all related records")
-    confirm = input("Type 'DELETE' to confirm: ").strip()
-    
-    if confirm == 'DELETE':
-        with transaction.atomic():
-            product.delete()
-        print(f"\n✅ Successfully deleted product {full_sku}")
-        print(f"   - Deleted {sales_count} sales records")
-        print(f"   - Deleted {label_prints_count} label print records")
-    else:
-        print("Deletion cancelled")
-
-def set_bulk_pre_pack_for_product():
-    # prompt for sku prefix, display products, select one, set bulk_pre_pack
-    sku_prefix = input("\nEnter SKU prefix (e.g., BEA-RN): ").strip().upper()
-    if not sku_prefix:
-        print("❌ SKU prefix is required")
-        return
-    products = Product.objects.filter(variety__sku_prefix=sku_prefix).select_related('variety')
-    if not products.exists():
-        print(f"\n❌ No products found with SKU prefix '{sku_prefix}'")
-        return
-    print(f"\n{'='*80}")
-    print(f"PRODUCTS FOR {sku_prefix}")
-    print(f"{'='*80}")
-    print(f"{'#':<4} {'SKU Suffix':<15} {'Bulk Pre-Pack':<15}")
-    print("-"*80)
-    product_list = list(products)
-    for idx, product in enumerate(product_list, 1):
-        bulk_pre_pack = product.bulk_pre_pack if product.bulk_pre_pack is not None else '--'
-        print(f"{idx:<4} {product.sku_suffix or '--':<15} {bulk_pre_pack:<15}")
-    print(f"\nTotal: {len(product_list)} products")
-    selection = input("\nEnter product number to set bulk_pre_pack (or 'cancel'): ").strip()
-    if selection.lower() == 'cancel':
-        print("Operation cancelled")
-        return
-    try:
-        idx = int(selection)
-        if idx < 1 or idx > len(product_list):
-            print(f"❌ Invalid selection. Please enter a number between 1 and {len(product_list)}")
-            return
-    except ValueError:
-        print("❌ Invalid input. Please enter a number")
-        return
-    product = product_list[idx - 1]
-    full_sku = f"{product.variety.sku_prefix}-{product.sku_suffix}"
-    print(f"\n{'='*80}")
-    print(f"SET BULK PRE-PACK FOR: {full_sku}")
-    print(f"{'='*80}")
-    print(f"Current bulk_pre_pack: {product.bulk_pre_pack if product.bulk_pre_pack is not None else '--'}")
-    new_value = input("\nEnter new bulk_pre_pack value (or press Enter to cancel): ").strip()
-    if not new_value:
-        print("Operation cancelled")
-        return
-    try:
-        new_value_int = int(new_value)
-        if new_value_int < 0:
-            print("❌ Value must be 0 or greater")
-            return
-        old_value = product.bulk_pre_pack
-        product.bulk_pre_pack = new_value_int
-        product.save()
-        print(f"\n✅ Updated {full_sku}: {old_value if old_value is not None else '--'} → {new_value_int}")
-    except ValueError:
-        print("❌ Invalid number. Please enter a valid integer")
-        return
-
-def set_bulk_rack_locations():
-    """
-    Calculate and set rack_location for all bulk products based on packet rack_location / 10.
-    For each variety, finds the packet product's rack_location, divides by 10,
-    and applies that value to all bulk products of that variety.
-    Example: packet rack_location 6.54 becomes 0.654 for bulk products.
-    """
-    from products.models import Variety, Product
-    
-    updated_count = 0
-    skipped_count = 0
-    error_count = 0
-    
-    # Get all varieties
-    varieties = Variety.objects.all()
-    
-    for variety in varieties:
-        try:
-            # Find the packet product for this variety
-            packet_product = Product.objects.filter(
-                variety=variety,
-                sku_suffix='pkt'
-            ).first()
-            
-            if not packet_product:
-                print(f"No packet product found for {variety.sku_prefix}")
-                skipped_count += 1
-                continue
-            
-            if not packet_product.rack_location:
-                print(f"No rack_location set for packet {variety.sku_prefix}")
-                skipped_count += 1
-                continue
-            
-            # Calculate bulk rack location (divide by 10)
-            # try:
-            #     bulk_rack_location = str(float(packet_product.rack_location) / 10)
-            # except (ValueError, TypeError):
-            #     print(f"Invalid rack_location for {variety.sku_prefix}: {packet_product.rack_location}")
-            #     error_count += 1
-            #     continue
-            # Calculate bulk rack location (divide by 10, round to 5 decimal places)
-            try:
-                bulk_rack_location = str(round(float(packet_product.rack_location) / 10, 5))
-            except (ValueError, TypeError):
-                print(f"Invalid rack_location for {variety.sku_prefix}: {packet_product.rack_location}")
-                error_count += 1
-                continue
-            
-            # Update all bulk products for this variety
-            bulk_products = Product.objects.filter(
-                variety=variety
-            ).exclude(sku_suffix='pkt')
-            
-            if bulk_products.exists():
-                count = bulk_products.update(rack_location=bulk_rack_location)
-                updated_count += count
-                print(f"Updated {count} bulk products for {variety.sku_prefix}: {packet_product.rack_location} -> {bulk_rack_location}")
-            
-        except Exception as e:
-            print(f"Error processing {variety.sku_prefix}: {str(e)}")
-            error_count += 1
-    
-    print(f"\n=== Summary ===")
-    print(f"Total bulk products updated: {updated_count}")
-    print(f"Varieties skipped (no packet or rack_location): {skipped_count}")
-    print(f"Errors encountered: {error_count}")
+    """Delete a product - PLACEHOLDER"""
+    print("\n⚠️  DELETE PRODUCT - Function placeholder")
+    print("This would allow you to:")
+    print("  - Select product by SKU")
+    print("  - Confirm deletion")
+    print("  - Handle cascading deletes")
 
 def product_menu():
     """Product management submenu"""
@@ -1436,24 +761,22 @@ def product_menu():
         print("="*50)
         print("1.  View all products")
         print("2.  View product details")
-        print("3.  View missing product attributes")
-        print("4.  Check pkt products with low label prints") 
-        print("5.  Check pkt products below percent of prev year sales")
-        print("6.  Find bulk products with low prints")
-        print("6.  Find bulk products with low prints")
-        print("7.  Reset bulk pre-pack to zero")
-        print("8.  Reset all website_bulk to False") 
-        print("9.  Reset all wholesale to False") 
-        print("10. View/edit products with bulk pre-pack")
-        print("11. Find pkt products with wrong print_back setting") 
-        print("12. Add new product")
-        print("13. Edit product")
-        print("14. Delete product")
-        print("15. Set bulk pre-pack for a product")
-        print("16. Set bulk rack locations based on pkt products")
+        print("3.  View lineitem names")
+        print("4.  View products without lineitem names")  
+        print("5.  Reset bulk pre-pack to zero")
+        print("6.  Reset all website_bulk to False") 
+        print("7.  Reset all wholesale to False") 
+        print("8.  View products with bulk pre-pack")
+        print("9.  Find pkt products with wrong print_back setting") 
+        print("10. Add new product")
+        print("11. Edit product")
+        print("12. Delete product")
+        print("13. View products without pkg_size")
+        print("14. Check pkt products with low label prints")
+        print("15. Check pkt products below % of prev year sales")
         print("0.  Back to main menu")
 
-        choice = get_choice("\nSelect option: ", ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'])
+        choice = get_choice("\nSelect option: ", ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'])
 
         if choice == '0':
             break
@@ -1464,48 +787,46 @@ def product_menu():
             view_product_details()
             pause()
         elif choice == '3':
-            view_missing_product_attributes()
+            view_lineitems()
             pause()
         elif choice == '4':
-            check_pkt_products_low_label_prints()
+            view_products_without_lineitem()  
             pause()
         elif choice == '5':
-            check_pkt_products_below_sales_percentage()
-            pause()
-        elif choice == '6':
-            find_bulk_products_low_prints()
-            pause()
-        elif choice == '7':
             reset_bulk_pre_pack_to_zero()
             pause()
-        elif choice == '8':
+        elif choice == '6':
             reset_all_website_bulk()
             pause()
-        elif choice == '9':
+        elif choice == '7':
             reset_all_wholesale()
             pause()
-        elif choice == '10':
-            view_edit_products_with_bulk_pre_pack()
+        elif choice == '8':
+            view_products_with_bulk_pre_pack() 
             pause()
-        elif choice == '11':
+        elif choice == '9':
             find_pkt_products_with_wrong_print_back_setting()
             pause()
-
-        elif choice == '12':
+        elif choice == '10':
             add_product()
             pause()
-        elif choice == '13':
+        elif choice == '11':
             edit_product()
             pause()
-        elif choice == '14':
+        elif choice == '12':
             delete_product()
             pause()
+        elif choice == '13':
+            view_products_without_pkg_size()
+            pause()
+        elif choice == '14':
+            check_pkt_products_low_label_prints()
+            pause()
         elif choice == '15':
-            set_bulk_pre_pack_for_product()
+            check_pkt_products_below_sales_percentage()
             pause()
-        elif choice == '16':
-            set_bulk_rack_locations()
-            pause()
+
+
 # ============================================================================
 # SALES MANAGEMENT
 # ============================================================================
