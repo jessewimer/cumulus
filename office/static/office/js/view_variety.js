@@ -621,7 +621,6 @@ function saveVarietyChanges() {
         common_name: document.getElementById('editCommonName').value,
         group: document.getElementById('editGroup').value,
         species: document.getElementById('editSpecies').value,
-        supergroup: document.getElementById('editSupergroup').value,
         subtype: document.getElementById('editSubtype').value,
         days: document.getElementById('editDays').value,
         active: document.getElementById('editActive').value === 'true',
