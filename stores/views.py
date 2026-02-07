@@ -239,14 +239,14 @@ def dashboard(request, store_name):
         # Try the relationship name you're using in your template/view
         products = store.available_products.filter(
             sku_suffix='pkt'  # Only get packet products for the dashboard
-        ).select_related('variety').order_by('variety__category', 'variety__veg_type', 'variety__var_name')
+        ).select_related('variety').order_by('variety__category', 'variety__crop', 'variety__var_name')
     except AttributeError:
         # Fallback if the relationship name is different
         products = Product.objects.filter(
             storeproduct__store=store,
             storeproduct__is_available=True,
             sku_suffix='pkt'
-        ).select_related('variety').order_by('variety__category', 'variety__veg_type', 'variety__var_name')
+        ).select_related('variety').order_by('variety__category', 'variety__crop', 'variety__var_name')
 
     # Attach previously ordered count using variety.sku_prefix
     for product in products:
@@ -296,7 +296,7 @@ def dashboard(request, store_name):
         if variety and getattr(variety, 'sku_prefix', None):
             product_dict[variety.sku_prefix] = [
                 getattr(variety, 'var_name', ''), 
-                getattr(variety, 'veg_type', '')
+                getattr(variety, 'crop', '')
             ]
 
     # --- Render context ---
@@ -491,8 +491,8 @@ def dashboard(request, store_name):
 #     product_dict = {}
 #     for p in product_qs:
 #         variety = getattr(p, 'variety', None)
-#         if variety and getattr(variety, 'sku_prefix', None) and getattr(p, 'veg_type', None):
-#             product_dict[variety.sku_prefix] = [variety.name, p.veg_type]
+#         if variety and getattr(variety, 'sku_prefix', None) and getattr(p, 'crop', None):
+#             product_dict[variety.sku_prefix] = [variety.name, p.crop]
 
 #     product_dict_json = json.dumps(product_dict)
 
@@ -561,14 +561,14 @@ def dashboard(request, store_name):
     # # for order in orders_data:
     # #     print(f"Order ID: {order['id']}, Order Num: {order['order_number']}, Total Cost: {order['total_cost']}")
 
-    # product_qs = Product.objects.all().values('item_number', 'variety', 'veg_type')
+    # product_qs = Product.objects.all().values('item_number', 'variety', 'crop')
     # product_dict = {}
 
     # for p in product_qs:
     #     item_num = p['item_number']
-    #     # Skip if item_number is None or missing variety/veg_type to avoid bad entries
-    #     if item_num is not None and p['variety'] and p['veg_type']:
-    #         product_dict[item_num] = [p['variety'], p['veg_type']]
+    #     # Skip if item_number is None or missing variety/crop to avoid bad entries
+    #     if item_num is not None and p['variety'] and p['crop']:
+    #         product_dict[item_num] = [p['variety'], p['crop']]
 
 
     # product_dict_json = json.dumps(product_dict)

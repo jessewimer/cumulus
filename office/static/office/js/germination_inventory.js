@@ -184,7 +184,7 @@ function processLoadedData(data) {
     appData.germYear = data.germ_year;
     appData.categories = data.categories;
     appData.groups = data.groups;
-    appData.vegTypes = data.veg_types;
+    appData.vegTypes = data.crops;
     
     setupTable();
     populateFilters();
@@ -259,7 +259,7 @@ function applyFilters() {
         
         return (!categoryFilter || lot.category === categoryFilter) &&
                 (!groupFilter || lot.group === groupFilter) &&
-                (!vegTypeFilter || lot.veg_type === vegTypeFilter) &&
+                (!vegTypeFilter || lot.crop === vegTypeFilter) &&
                 websiteMatch; // ADD THIS
     });
 

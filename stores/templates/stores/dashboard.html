@@ -739,7 +739,7 @@
                                             value="0"
                                             data-sku-prefix="{{ product.variety.sku_prefix }}"
                                             data-variety="{{ product.variety.var_name }}"
-                                            data-veg-type="{{ product.variety.veg_type }}"
+                                            data-crop="{{ product.variety.crop }}"
                                             tabindex="{{ forloop.counter }}">
                                     </td>
                                     <td>
@@ -751,7 +751,7 @@
                                     <td>
                                         <span class="category-badge category-{{ product.variety.category|lower }}">{{ product.variety.category }}</span>
                                     </td>
-                                    <td>{{ product.variety.veg_type }}</td>
+                                    <td>{{ product.variety.crop }}</td>
                                     <td>{{ product.variety.subtype }}</td>
                                     <td style="font-weight: 600;">{{ product.variety.var_name }}</td>
                                     <td>{{ product.variety.ws_description }}</td>

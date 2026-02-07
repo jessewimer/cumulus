@@ -764,13 +764,13 @@
                     </select>
                 </div>
 
-                <!-- Veg Type Filter -->
+                <!-- Crop Filter -->
                 <div class="filter-group">
-                    <label class="filter-label" for="vegtype-filter">Crop</label>
-                    <select id="vegtype-filter" class="styled-select">
+                    <label class="filter-label" for="crop-filter">Crop</label>
+                    <select id="crop-filter" class="styled-select">
                         <option value="">All Crops</option>
-                        {% for veg_type in veg_types %}
-                            <option value="{{ veg_type }}">{{ veg_type|capfirst }}</option>
+                        {% for crop in crops %}
+                            <option value="{{ crop }}">{{ crop|capfirst }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -831,7 +831,7 @@
                         <tr id="product-row-{{ variety.sku_prefix }}"
                             class="table-row"
                             data-category="{{ variety.category|lower }}"
-                            data-veg-type="{{ variety.veg_type|lower }}"
+                            data-crop="{{ variety.crop|lower }}"
                             data-sku-prefix="{{ variety.sku_prefix }}">
 
                             <!-- Checkbox -->
@@ -852,7 +852,7 @@
                             </td>
 
                             <!-- Type, Sub Type, Variety -->
-                            <td>{{ variety.veg_type }}</td>
+                            <td>{{ variety.crop }}</td>
                             <td>{{ variety.subtype }}</td>
                             <td style="font-weight: 600;">{{ variety.var_name }}</td>
 

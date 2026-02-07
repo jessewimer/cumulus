@@ -18,7 +18,7 @@ def send_germ_samples(request):
    
     for batch in germination_batches:
         germinations = batch.germinations.select_related(
-            'lot__variety', 'lot__grower'  # Remove __veg_type since it's not a foreign key
+            'lot__variety', 'lot__grower'  
         ).all()
        
         batch_data = {
@@ -33,7 +33,7 @@ def send_germ_samples(request):
                     'sku_prefix': g.lot.variety.sku_prefix,
                     'lot_code': f"{g.lot.grower.code if g.lot.grower else 'UNK'}{g.lot.year}",
                     'variety_name': g.lot.variety.var_name,
-                    'crop_name': g.lot.variety.veg_type if g.lot.variety.veg_type else 'Unknown',
+                    'crop_name': g.lot.variety.crop if g.lot.variety.crop else 'Unknown',
                 } for g in germinations
             ]
         }
@@ -41,7 +41,7 @@ def send_germ_samples(request):
    
     # Get all possible lots for scanning lookup
     lots_data = {}
-    lots = Lot.objects.select_related('variety', 'grower').all()  # Remove __veg_type here too
+    lots = Lot.objects.select_related('variety', 'grower').all() 
     
     for lot in lots:
         barcode = f"{lot.variety.sku_prefix}-{lot.grower.code if lot.grower else 'UNK'}{lot.year}"
@@ -49,7 +49,7 @@ def send_germ_samples(request):
             'sku_prefix': lot.variety.sku_prefix,
             'lot_code': f"{lot.grower.code if lot.grower else 'UNK'}{lot.year}",
             'variety_name': lot.variety.var_name,
-            'crop_name': lot.variety.veg_type if lot.variety.veg_type else 'Unknown',
+            'crop_name': lot.variety.crop if lot.variety.crop else 'Unknown',
             'lot_id': lot.id,  # You'll need this for the submit_batch function
         }
     

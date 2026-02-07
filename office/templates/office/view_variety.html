@@ -64,7 +64,7 @@
                         </div>
                         <div class="variety-detail">
                             <span class="variety-detail-label">Type:</span>
-                            <span class="variety-detail-value" id="varietyType">{% if variety %}{{ variety.veg_type|default:"--" }}{% else %}--{% endif %}</span>
+                            <span class="variety-detail-value" id="varietyType">{% if variety %}{{ variety.crop|default:"--" }}{% else %}--{% endif %}</span>
                         </div>
                         {% if variety and variety.days %}
                         <div class="variety-detail">
@@ -1418,18 +1418,6 @@
                             <option value="">Select Group</option>
                             {% for group in groups %}
                             <option value="{{ group }}" {% if variety.group and variety.group == group %}selected{% endif %}>{{ group }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Vegetable Type</label>
-                        <select id="editVegType">
-                            <option value="">Select Type</option>
-                            {% for veg_type in veg_types %}
-                            {% if veg_type != "Veg Type" %}
-                            <option value="{{ veg_type }}" {% if variety.veg_type|upper == veg_type|upper %}selected{% endif %}>{{ veg_type|upper }}</option>
-                            {% endif %}
                             {% endfor %}
                         </select>
                     </div>

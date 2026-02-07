@@ -174,13 +174,12 @@ function setupSearch() {
             return;
         }
 
-        // Search through common_spelling, crop, and veg_type
+        // Search through common_spelling, crop
         const matches = [];
 
         for (const [skuPrefix, data] of Object.entries(allVarieties)) {
             const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(query);
             const matchesCrop = data.crop && data.crop.toLowerCase().includes(query);
-            const matchesVegType = data.veg_type && data.veg_type.toLowerCase().includes(query);
             
             if (matchesCommonSpelling || matchesCrop || matchesVegType) {
                 matches.push([skuPrefix, data]);
@@ -203,7 +202,7 @@ function setupSearch() {
             searchDropdown.innerHTML = matches.map(([skuPrefix, data]) => `
                 <div class="dropdown-item" onclick="selectVariety('${skuPrefix}')">
                     <div class="dropdown-variety-name">${data.var_name || data.common_spelling}</div>
-                    <div class="dropdown-variety-type">${data.veg_type || ''}</div>
+                    <div class="dropdown-variety-type">${data.crop || ''}</div>
                 </div>
             `).join('');
             searchDropdown.classList.add('show');
@@ -621,7 +620,6 @@ function saveVarietyChanges() {
         common_spelling: document.getElementById('editCommonSpelling').value,
         common_name: document.getElementById('editCommonName').value,
         group: document.getElementById('editGroup').value,
-        veg_type: document.getElementById('editVegType').value,
         species: document.getElementById('editSpecies').value,
         supergroup: document.getElementById('editSupergroup').value,
         subtype: document.getElementById('editSubtype').value,
@@ -2864,7 +2862,7 @@ function reprintStockSeedLabel() {
                     // Send to Flask for printing
                     const printData = {
                         variety: data.variety_name,
-                        veg_type: data.veg_type,
+                        crop: data.crop,
                         lot_number: data.lot_number,
                         quantity: data.quantity
                     };
@@ -3016,7 +3014,7 @@ function collectStockSeedPrintData(quantity) {
         
         return {
             variety: varietyName,
-            veg_type: vegType,
+            crop: vegType,
             lot_number: lotNumber,
             quantity: quantity
         };

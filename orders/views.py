@@ -140,7 +140,7 @@ def calculate_bulk_pull_and_print(bulk_items):
             if quantity_to_pull > 0:
                 bulk_to_pull[sku] = {
                     "var_name": product.variety.var_name,
-                    "veg_type": product.variety.veg_type,
+                    "crop": product.variety.crop,
                     "sku_suffix": product.sku_suffix,
                     "quantity": quantity_to_pull,
                 }
@@ -247,7 +247,7 @@ def enrich_bulk_to_pull_and_print(bulk_items):
 
             bulk_to_pull[sku] = {
                 "var_name": product.variety.var_name,
-                "veg_type": product.variety.veg_type,
+                "crop": product.variety.crop,
                 "sku_suffix": product.sku_suffix,
                 "quantity": pull_qty,
             }
@@ -1215,7 +1215,7 @@ def generate_order_pdf(request, order_id):
             variety = (
                 item.product.variety.var_name if item.product else "N/A"
             )
-            veg_type = item.product.variety.veg_type if item.product else "N/A"
+            crop = item.product.variety.crop if item.product else "N/A"
             line_total = quantity * pkt_price
 
             # Truncate long variety names
@@ -1226,7 +1226,7 @@ def generate_order_pdf(request, order_id):
                 [
                     str(quantity),
                     variety,
-                    veg_type,
+                    crop,
                     f"${pkt_price:.2f}",
                     f"${line_total:.2f}",
                 ]
@@ -1411,7 +1411,7 @@ def generate_order_pdf(request, order_id):
 #             variety = (
 #                 item.product.variety.var_name if item.product else "N/A"
 #             )
-#             veg_type = item.product.variety.veg_type if item.product else "N/A"
+#             crop = item.product.variety.crop if item.product else "N/A"
 #             line_total = quantity * pkt_price
 
 #             # Truncate long variety names
@@ -1422,7 +1422,7 @@ def generate_order_pdf(request, order_id):
 #                 [
 #                     str(quantity),
 #                     variety,
-#                     veg_type,
+#                     crop,
 #                     f"${pkt_price:.2f}",
 #                     f"${line_total:.2f}",
 #                 ]
@@ -1594,7 +1594,7 @@ def generate_order_pdf(request, order_id):
 #         for item in order_includes:
 #             quantity = item.quantity or 0
 #             variety = item.product.variety.var_name if item.product else 'N/A'
-#             veg_type = item.product.variety.veg_type if item.product else 'N/A'
+#             crop = item.product.variety.crop if item.product else 'N/A'
 #             # unit_price = item.product.price if item.product else 0
 #             line_total = quantity * pkt_price
             
@@ -1605,7 +1605,7 @@ def generate_order_pdf(request, order_id):
 #             table_data.append([
 #                 str(quantity),
 #                 variety,
-#                 veg_type,
+#                 crop,
 #                 f"${pkt_price:.2f}",
 #                 f"${line_total:.2f}"
 #             ])

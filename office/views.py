@@ -149,14 +149,13 @@ def view_variety(request, sku_prefix=None):  # Add optional parameter
     
     # --- All varieties ---
     # Exclude base component mixes (MIX-LB, MIX-SB, MIX-MB)
-    varieties = Variety.objects.order_by('veg_type', 'sku_prefix')
+    varieties = Variety.objects.order_by('crop', 'sku_prefix')
     
     # --- Build all_vars dict for front-end dropdown (JS-friendly) ---
     all_vars = {
         v.sku_prefix: {
             'common_spelling': v.common_spelling,
             'var_name': v.var_name,
-            'veg_type': v.veg_type,
             'crop': v.crop,
         }
         for v in varieties
@@ -302,7 +301,6 @@ def view_variety(request, sku_prefix=None):  # Add optional parameter
         'crops': settings.CROPS,
         'subtypes': settings.SUBTYPES,
         'supergroups': settings.SUPERGROUPS,
-        'veg_types': settings.VEG_TYPES,
         'packed_for_year': packed_for_year,
         'transition': settings.TRANSITION,
         'has_pending_germ': has_pending_germ,
@@ -1057,11 +1055,11 @@ def store_sales_details(request):
         
         print(f"DEBUG: Sales by store entries: {len(sales_by_store)}")
         
-        # 3. Sales by product - Use var_name with veg_type in parentheses
+        # 3. Sales by product - Use var_name with crop in parentheses
         sales_by_product = []
         product_sales = base_orders.values(
             'items__product__variety__var_name',
-            'items__product__variety__veg_type'
+            'items__product__variety__crop'
         ).annotate(
             total_sales=Sum(F('items__price') * F('items__quantity')),
             total_packets=Sum('items__quantity')
@@ -1070,11 +1068,11 @@ def store_sales_details(request):
         for product in product_sales:
             if product['total_sales']:
                 var_name = product['items__product__variety__var_name'] or 'Unknown Variety'
-                veg_type = product['items__product__variety__veg_type']
+                crop = product['items__product__variety__crop'] or ''
                 
-                # Format: "Variety Name (Veg Type)" or just "Variety Name" if no veg_type
-                if veg_type:
-                    product_name = f"{var_name} ({veg_type})"
+                # Format: "Variety Name (Crop)" or just "Variety Name" if no crop
+                if crop:
+                    product_name = f"{var_name} ({crop})"
                 else:
                     product_name = var_name
                 
@@ -1119,15 +1117,15 @@ def varieties_json(request):
 @user_passes_test(is_employee)
 def crops_json(request):
     """
-    Get crops/veg_types as JSON with optional search
+    Get crops/crop as JSON with optional search
     """
     q = request.GET.get('q', '')
-    crops = Product.objects.exclude(veg_type__isnull=True).exclude(veg_type='')
+    crops = Product.objects.exclude(crop__isnull=True).exclude(crop='')
     
     if q:
-        crops = crops.filter(veg_type__icontains=q)
+        crops = crops.filter(crop__icontains=q)
     
-    crop_names = crops.values_list('veg_type', flat=True).distinct()
+    crop_names = crops.values_list('crop', flat=True).distinct()
     data = [{"name": name} for name in crop_names]
     return JsonResponse(data, safe=False)
 
@@ -1136,14 +1134,14 @@ def crops_json(request):
 @user_passes_test(is_employee)
 def products_by_crop_json(request, crop):
     """
-    Get products by specific crop/veg_type as JSON
+    Get products by specific crop as JSON
     """
-    products = Product.objects.filter(veg_type=crop)
+    products = Product.objects.filter(crop=crop)
     data = []
     
     for p in products:
         data.append({
-            "veg_type": p.veg_type,
+            "crop": p.crop,
             "variety": p.variety,
             "current_inventory": "-",
             "previous_inventory": "-",
@@ -1495,7 +1493,7 @@ def admin_dashboard(request):
         'env_types': settings.ENV_TYPES,
         'crops': settings.CROPS,
         'groups': settings.GROUPS,
-        'veg_types': settings.VEG_TYPES,
+        'crop': settings.CROPS,
         # 'supergroups': settings.SUPERGROUPS,
         'subtypes': settings.SUBTYPES,
         'categories': settings.CATEGORIES,
@@ -1562,7 +1560,7 @@ def germination_inventory_data(request):
         inventory_data = []
         categories = set()
         groups = set()
-        veg_types = set()
+        crops = set()
         
         for lot in lots:
             variety = lot.variety
@@ -1572,8 +1570,8 @@ def germination_inventory_data(request):
                 categories.add(variety.category)
             if variety.group:
                 groups.add(variety.group)
-            if variety.veg_type:
-                veg_types.add(variety.veg_type)
+            if variety.crop:
+                crops.add(variety.crop)
             
             # Get inventory data for this lot
             inventories = lot.inventory.order_by('-inv_date')
@@ -1668,7 +1666,7 @@ def germination_inventory_data(request):
                 'sku_prefix': variety.sku_prefix,
                 'category': variety.category,
                 'group': variety.group,
-                'veg_type': variety.veg_type,
+                'crop': variety.crop,
                 'species': variety.species,
                 'lot_code': lot_code,
                 'website_bulk': variety.website_bulk,
@@ -1685,7 +1683,7 @@ def germination_inventory_data(request):
         # Convert sets to sorted lists
         categories = sorted(list(categories))
         groups = sorted(list(groups))
-        veg_types = sorted(list(veg_types))
+        crops = sorted(list(crops))
         
         # print(f"Returning {len(inventory_data)} active lot records (retired lots excluded)")
         germ_year = settings.FOR_YEAR
@@ -1695,7 +1693,7 @@ def germination_inventory_data(request):
             'current_year': current_year,  # New: the most recent germination year
             'categories': categories,
             'groups': groups,
-            'veg_types': veg_types,
+            'crops': crops,
             'germ_year': germ_year
         })
         
@@ -1704,331 +1702,7 @@ def germination_inventory_data(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
-# @login_required(login_url='/office/login/')
-# @user_passes_test(is_employee)
-# @require_http_methods(["GET"])
-# def germination_inventory_data(request):
-#     """API endpoint to get germination and inventory data"""
-    
-#     try:
-#         # Find the most recent germination year across all lots
-#         max_germ_year = Germination.objects.aggregate(
-#             max_year=Max('for_year')
-#         )['max_year']
-        
-#         # Calculate the 4 germination years to display
-#         germ_years = []
-#         for i in range(3, -1, -1):  # 3, 2, 1, 0 (last 4 years)
-#             year = max_germ_year - i
-#             if year >= 0:  # Don't go negative
-#                 germ_years.append(f"{year:02d}")  # Format as 2-digit string
-        
-#         # The current year is the most recent (rightmost column)
-#         current_year = f"{max_germ_year:02d}"
 
-#         # Get all lots with related data, EXCLUDING retired lots AND mix product lots
-#         lots = Lot.objects.select_related(
-#             'variety', 'grower'
-#         ).prefetch_related(
-#             'inventory', 'germinations', 'germ_sample_prints'
-#         ).filter(
-#             variety__isnull=False
-#         ).exclude(
-#             retired_info__isnull=False  # Exclude lots that have a RetiredLot record
-#         ).exclude(
-#             variety__sku_prefix__in=['CAR-RA', 'BEE-3B', 'LET-MX', 'MIX-SP', 'MIX-MI', 'MIX-BR', 'FLO-ED']
-#         ).annotate(
-#             # Custom ordering for category: Vegetables=1, Flowers=2, Herbs=3, Others=4
-#             category_order=Case(
-#                 When(variety__category='Vegetables', then=1),
-#                 When(variety__category='Flowers', then=2),
-#                 When(variety__category='Herbs', then=3),
-#                 default=4,
-#                 output_field=IntegerField()
-#             )
-#         ).order_by(
-#             'category_order',        # Custom category order (Vegetables, Flowers, Herbs)
-#             'variety__sku_prefix',   # Then by sku_prefix
-#             'year'                   # Then by lot year
-#         )
-        
-#         inventory_data = []
-#         categories = set()
-#         groups = set()
-#         veg_types = set()
-        
-#         for lot in lots:
-#             variety = lot.variety
-            
-#             # Add to filter sets
-#             if variety.category:
-#                 categories.add(variety.category)
-#             if variety.group:
-#                 groups.add(variety.group)
-#             if variety.veg_type:
-#                 veg_types.add(variety.veg_type)
-            
-#             # Get inventory data for this lot
-#             inventories = lot.inventory.order_by('-inv_date')
-            
-#             current_inventory_weight = None
-#             current_inventory_date = None
-#             previous_inventory_weight = None
-#             previous_inventory_date = None
-#             inventory_difference = None
-            
-#             if inventories.exists():
-#                 current_inv = inventories.first()
-#                 current_inventory_weight = float(current_inv.weight)
-#                 current_inventory_date = current_inv.inv_date.strftime('%m/%Y')  # Format as MM/YYYY
-                
-#                 if inventories.count() > 1:
-#                     previous_inv = inventories[1]
-#                     previous_inventory_weight = float(previous_inv.weight)
-#                     previous_inventory_date = previous_inv.inv_date.strftime('%m/%Y')  # Format as MM/YYYY
-#                     inventory_difference = current_inventory_weight - previous_inventory_weight
-            
-#             # Get germination data for the display years - take MAX rate if multiple tests
-#             germination_rates = {}
-#             for year_str in germ_years:
-#                 year_for_lookup = int(year_str)
-                
-#                 # Get the highest germination rate for this year
-#                 germ = lot.germinations.filter(for_year=year_for_lookup).order_by('-germination_rate').first()
-#                 if germ:
-#                     germination_rates[year_str] = germ.germination_rate
-#                 else:
-#                     germination_rates[year_str] = None
-            
-#             # Get germination sample prints for this lot
-#             germ_sample_prints = {}
-#             for print_record in lot.germ_sample_prints.all():
-#                 year_str = f"{print_record.for_year:02d}"
-#                 if year_str in germ_years:  # Only include years we're displaying
-#                     germ_sample_prints[year_str] = True
-            
-#             # Get detailed germination records - use the highest rate test for each year
-#             germination_records = {}
-#             for year_str in germ_years:
-#                 year_for_lookup = int(year_str)
-                
-#                 # Get the germination record with the highest rate for this year
-#                 germ_record = lot.germinations.filter(for_year=year_for_lookup).order_by('-germination_rate').first()
-#                 if germ_record:
-#                     germination_records[year_str] = {
-#                         'germination_rate': germ_record.germination_rate,
-#                         'test_date': germ_record.test_date.strftime('%Y-%m-%d') if germ_record.test_date else None,
-#                         'status': germ_record.status,
-#                         'notes': germ_record.notes
-#                     }
-            
-#             # Create lot code
-#             grower_code = lot.grower.code if lot.grower else 'UNK'
-#             lot_code = f"{grower_code}{lot.year}"
-            
-#             inventory_data.append({
-#                 'lot_id': lot.id,  # Add lot ID for frontend reference
-#                 'variety_name': variety.var_name,
-#                 'sku_prefix': variety.sku_prefix,
-#                 'category': variety.category,
-#                 'group': variety.group,
-#                 'veg_type': variety.veg_type,
-#                 'species': variety.species,
-#                 'lot_code': lot_code,
-#                 'website_bulk': variety.website_bulk,
-#                 'current_inventory_weight': current_inventory_weight,
-#                 'current_inventory_date': current_inventory_date,
-#                 'previous_inventory_weight': previous_inventory_weight,
-#                 'previous_inventory_date': previous_inventory_date,
-#                 'inventory_difference': inventory_difference,
-#                 'germination_rates': germination_rates,  # Keep existing for backward compatibility
-#                 'germ_sample_prints': germ_sample_prints,  # New: sample print status by year
-#                 'germination_records': germination_records  # New: detailed germination records by year
-#             })
-        
-#         # Convert sets to sorted lists
-#         categories = sorted(list(categories))
-#         groups = sorted(list(groups))
-#         veg_types = sorted(list(veg_types))
-        
-#         # print(f"Returning {len(inventory_data)} active lot records (retired lots excluded)")
-#         germ_year = settings.FOR_YEAR
-#         return JsonResponse({
-#             'inventory_data': inventory_data,
-#             'germ_years': germ_years,
-#             'current_year': current_year,  # New: the most recent germination year
-#             'categories': categories,
-#             'groups': groups,
-#             'veg_types': veg_types,
-#             'germ_year': germ_year
-#         })
-        
-#     except Exception as e:
-#         # print(f"Error in germination_inventory_data: {str(e)}")
-#         import traceback
-#         traceback.print_exc()
-#         return JsonResponse({'error': str(e)}, status=500)
-# @login_required(login_url='/office/login/')
-# @user_passes_test(is_employee)
-# @require_http_methods(["GET"])
-# def germination_inventory_data(request):
-#     """API endpoint to get germination and inventory data"""
-    
-#     try:
-#         # Find the most recent germination year across all lots
-#         max_germ_year = Germination.objects.aggregate(
-#             max_year=Max('for_year')
-#         )['max_year']
-        
-#         # Calculate the 4 germination years to display
-#         germ_years = []
-#         for i in range(3, -1, -1):  # 3, 2, 1, 0 (last 4 years)
-#             year = max_germ_year - i
-#             if year >= 0:  # Don't go negative
-#                 germ_years.append(f"{year:02d}")  # Format as 2-digit string
-        
-#         # The current year is the most recent (rightmost column)
-#         current_year = f"{max_germ_year:02d}"
-
-#         # Get all lots with related data, EXCLUDING retired lots
-#         lots = Lot.objects.select_related(
-#             'variety', 'grower'
-#         ).prefetch_related(
-#             'inventory', 'germinations', 'germ_sample_prints'
-#         ).filter(
-#             variety__isnull=False
-#         ).exclude(
-#             retired_info__isnull=False  # Exclude lots that have a RetiredLot record
-#         ).exclude(
-#             variety__sku_prefix__in=mix_prefixes  # Exclude mix lots
-#         ).annotate(
-#             # Custom ordering for category: Vegetables=1, Flowers=2, Herbs=3, Others=4
-#             category_order=Case(
-#                 When(variety__category='Vegetables', then=1),
-#                 When(variety__category='Flowers', then=2),
-#                 When(variety__category='Herbs', then=3),
-#                 default=4,
-#                 output_field=IntegerField()
-#             )
-#         ).order_by(
-#             'category_order',        # Custom category order (Vegetables, Flowers, Herbs)
-#             'variety__sku_prefix',   # Then by sku_prefix
-#             'year'                   # Then by lot year
-#         )
-        
-#         inventory_data = []
-#         categories = set()
-#         groups = set()
-#         veg_types = set()
-        
-#         for lot in lots:
-#             variety = lot.variety
-            
-#             # Add to filter sets
-#             if variety.category:
-#                 categories.add(variety.category)
-#             if variety.group:
-#                 groups.add(variety.group)
-#             if variety.veg_type:
-#                 veg_types.add(variety.veg_type)
-            
-#             # Get inventory data for this lot
-#             inventories = lot.inventory.order_by('-inv_date')
-            
-#             current_inventory_weight = None
-#             current_inventory_date = None
-#             previous_inventory_weight = None
-#             previous_inventory_date = None
-#             inventory_difference = None
-            
-#             if inventories.exists():
-#                 current_inv = inventories.first()
-#                 current_inventory_weight = float(current_inv.weight)
-#                 current_inventory_date = current_inv.inv_date.strftime('%m/%Y')  # Format as MM/YYYY
-                
-#                 if inventories.count() > 1:
-#                     previous_inv = inventories[1]
-#                     previous_inventory_weight = float(previous_inv.weight)
-#                     previous_inventory_date = previous_inv.inv_date.strftime('%m/%Y')  # Format as MM/YYYY
-#                     inventory_difference = current_inventory_weight - previous_inventory_weight
-            
-#             # Get germination data for the display years (existing logic)
-#             germination_rates = {}
-#             for year_str in germ_years:
-#                 year_for_lookup = int(year_str)  # Use 2-digit year directly
-                
-#                 germ = lot.germinations.filter(for_year=year_for_lookup).first()
-#                 if germ:
-#                     germination_rates[year_str] = germ.germination_rate
-#                 else:
-#                     germination_rates[year_str] = None
-            
-#             # Get germination sample prints for this lot
-#             germ_sample_prints = {}
-#             for print_record in lot.germ_sample_prints.all():
-#                 year_str = f"{print_record.for_year:02d}"
-#                 if year_str in germ_years:  # Only include years we're displaying
-#                     germ_sample_prints[year_str] = True
-            
-#             # Get detailed germination records for this lot
-#             germination_records = {}
-#             for germ_record in lot.germinations.all():
-#                 year_str = f"{germ_record.for_year:02d}"
-#                 if year_str in germ_years:  # Only include years we're displaying
-#                     germination_records[year_str] = {
-#                         'germination_rate': germ_record.germination_rate,
-#                         'test_date': germ_record.test_date.strftime('%Y-%m-%d') if germ_record.test_date else None,
-#                         'status': germ_record.status,
-#                         'notes': germ_record.notes
-#                     }
-            
-#             # Create lot code
-#             grower_code = lot.grower.code if lot.grower else 'UNK'
-#             lot_code = f"{grower_code}{lot.year}"
-            
-#             inventory_data.append({
-#                 'lot_id': lot.id,  # Add lot ID for frontend reference
-#                 'variety_name': variety.var_name,
-#                 'sku_prefix': variety.sku_prefix,
-#                 'category': variety.category,
-#                 'group': variety.group,
-#                 'veg_type': variety.veg_type,
-#                 'species': variety.species,
-#                 'lot_code': lot_code,
-#                 'website_bulk': variety.website_bulk,
-#                 'current_inventory_weight': current_inventory_weight,
-#                 'current_inventory_date': current_inventory_date,
-#                 'previous_inventory_weight': previous_inventory_weight,
-#                 'previous_inventory_date': previous_inventory_date,
-#                 'inventory_difference': inventory_difference,
-#                 'germination_rates': germination_rates,  # Keep existing for backward compatibility
-#                 'germ_sample_prints': germ_sample_prints,  # New: sample print status by year
-#                 'germination_records': germination_records  # New: detailed germination records by year
-#             })
-        
-#         # Convert sets to sorted lists
-#         categories = sorted(list(categories))
-#         groups = sorted(list(groups))
-#         veg_types = sorted(list(veg_types))
-        
-#         # print(f"Returning {len(inventory_data)} active lot records (retired lots excluded)")
-#         germ_year = settings.FOR_YEAR
-#         return JsonResponse({
-#             'inventory_data': inventory_data,
-#             'germ_years': germ_years,
-#             'current_year': current_year,  # New: the most recent germination year
-#             'categories': categories,
-#             'groups': groups,
-#             'veg_types': veg_types,
-#             'germ_year': germ_year
-#         })
-        
-#     except Exception as e:
-#         # print(f"Error in germination_inventory_data: {str(e)}")
-#         import traceback
-#         traceback.print_exc()
-#         return JsonResponse({'error': str(e)}, status=500)
-    
 
 @login_required(login_url='/office/login/')
 @user_passes_test(is_employee)
@@ -2117,305 +1791,8 @@ def create_germ_sample_print(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
-# @login_required(login_url='/office/login/')
-# @user_passes_test(is_employee)
-# @require_http_methods(["POST"])
-# def create_germ_sample_print(request):
-#     """API endpoint to create a germination sample print record"""
-    
-#     try:
-#         data = json.loads(request.body)
-#         lot_id = data.get('lot_id')
-#         germ_year = data.get('germ_year')
-        
-#         if not lot_id or germ_year is None:
-#             return JsonResponse({'error': 'lot_id and germ_year are required'}, status=400)
-        
-#         # Get the lot
-#         try:
-#             lot = Lot.objects.get(id=lot_id)
-#         except Lot.DoesNotExist:
-#             return JsonResponse({'error': 'Lot not found'}, status=404)
-        
-#         # Check if a print record already exists for this lot/year combo
-#         existing_print = GermSamplePrint.objects.filter(
-#             lot=lot, 
-#             for_year=germ_year
-#         ).first()
-        
-#         if existing_print:
-#             return JsonResponse({
-#                 'success': True,
-#                 'message': 'Print record already exists',
-#                 'existing': True,
-#                 'print_date': existing_print.print_date.strftime('%Y-%m-%d')
-#             })
-        
-#         # Create new print record
-#         germ_print = GermSamplePrint.objects.create(
-#             lot=lot,
-#             for_year=germ_year
-#         )
-        
-#         return JsonResponse({
-#             'success': True,
-#             'message': 'Germination sample print record created successfully',
-#             'existing': False,
-#             'print_id': germ_print.id,
-#             'print_date': germ_print.print_date.strftime('%Y-%m-%d')
-#         })
-        
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Invalid JSON'}, status=400)
-#     except Exception as e:
-#         import traceback
-#         traceback.print_exc()
-#         return JsonResponse({'error': str(e)}, status=500)
 
 
-
-# def calculate_variety_usage(variety, sales_year):
-#     """
-#     Calculate how many lbs of a variety were used during a sales year.
-    
-#     Scenarios:
-#     1. Not retired: uses last 2 inventory records
-#     2. Retired WITH inventory at end of usage year (Sept/Oct/Nov): retired AFTER season, uses last 2 inventory records
-#     3. Retired WITHOUT inventory at end of usage year: retired during season (or should have been), uses last inventory - lbs_remaining
-#     4. Retired with only 1 inventory record: uses that record - lbs_remaining
-    
-#     Tracks if variety ran out of seed during the season (all lots retired/depleted during season).
-#     """
-#     from decimal import Decimal
-#     from datetime import datetime
-    
-#     # Find all lots for this variety that had active status for this sales year
-#     active_lots = Lot.objects.filter(
-#         variety=variety,
-#         germinations__status='active',
-#         germinations__for_year=sales_year
-#     ).distinct()
-    
-#     total_usage = Decimal('0.00')
-#     lot_details = []
-#     lots_processed = 0
-#     retired_during_season_count = 0
-    
-#     # Define Sept/Oct/Nov range at END of the sales year (e.g., Sept/Oct/Nov 2025 for year 25)
-#     # Define Sept 15 - Oct 15 range at END of the sales year (when inventory is taken)
-#     year_full = 2000 + int(sales_year)
-#     end_season_start = datetime(year_full, 9, 15)
-#     end_season_end = datetime(year_full, 10, 15, 23, 59, 59)
-        
-#     for lot in active_lots:
-#         # Get all inventory records for this lot, ordered by date
-#         inventory_records = lot.inventory.all().order_by('inv_date')
-#         inventory_count = inventory_records.count()
-        
-#         # Skip lots with no inventory records
-#         if inventory_count == 0:
-#             continue
-        
-#         # Handle retired lots with only 1 inventory record
-#         if inventory_count == 1:
-#             if hasattr(lot, 'retired_info'):
-#                 # Retired lot with 1 inventory - must have been depleted during season
-#                 # Use that inventory - lbs_remaining
-#                 lots_processed += 1
-#                 start_weight = inventory_records.first().weight
-#                 end_weight = lot.retired_info.lbs_remaining
-                
-#                 lot_usage = start_weight - end_weight
-                
-#                 if lot_usage > 0:
-#                     total_usage += lot_usage
-#                     lot_details.append({
-#                         'lot_code': lot.get_four_char_lot_code(),
-#                         'start_weight': float(start_weight),
-#                         'end_weight': float(end_weight),
-#                         'usage': float(lot_usage),
-#                         'retired': True
-#                     })
-#                     retired_during_season_count += 1
-#             # Skip non-retired lots with only 1 inventory
-#             continue
-        
-#         # Lot has 2+ inventory records
-#         lots_processed += 1
-        
-#         # Get the last two inventory records
-#         last_two = inventory_records[inventory_count-2:]
-#         second_to_last = last_two[0]
-#         last_inventory = last_two[1]
-        
-#         retired_during_season = False
-        
-#         # Check if lot was retired
-#         if hasattr(lot, 'retired_info'):
-#             # Key question: Is there inventory at the END of the usage year (Sept/Oct/Nov)?
-#             has_end_season_inventory = inventory_records.filter(
-#                 inv_date__gte=end_season_start,
-#                 inv_date__lte=end_season_end
-#             ).exists()
-            
-#             if has_end_season_inventory:
-#                 # Lot still had inventory at end of season
-#                 # It was retired AFTER the season
-#                 # Use normal calculation: last 2 inventories
-#                 start_weight = second_to_last.weight
-#                 end_weight = last_inventory.weight
-#                 retired_during_season = False
-#             else:
-#                 # No inventory recorded at end of season
-#                 # Lot was depleted during season (either properly retired or forgotten)
-#                 # Use last inventory - lbs_remaining
-#                 start_weight = last_inventory.weight
-#                 end_weight = lot.retired_info.lbs_remaining
-#                 retired_during_season = True
-#                 retired_during_season_count += 1
-#         else:
-#             # Not retired - use normal calculation: last 2 inventories
-#             start_weight = second_to_last.weight
-#             end_weight = last_inventory.weight
-        
-#         lot_usage = start_weight - end_weight
-        
-#         # Only count positive usage
-#         if lot_usage > 0:
-#             total_usage += lot_usage
-#             lot_details.append({
-#                 'lot_code': lot.get_four_char_lot_code(),
-#                 'start_weight': float(start_weight),
-#                 'end_weight': float(end_weight),
-#                 'usage': float(lot_usage),
-#                 'retired': retired_during_season
-#             })
-    
-#     # Check if ALL processed lots were retired/depleted during the season
-#     ran_out_of_seed = (
-#         lots_processed > 0 and 
-#         retired_during_season_count == lots_processed
-#     )
-    
-#     return {
-#         'total_lbs': float(total_usage),
-#         'lot_count': len(lot_details),
-#         'lots': lot_details,
-#         'sales_year': sales_year,
-#         'display_year': f"20{sales_year}",
-#         'ran_out_of_seed': ran_out_of_seed
-#     }
-# def calculate_variety_usage(variety, sales_year):
-#     """
-#     Calculate how many lbs of a variety were used during a sales year.
-    
-#     Scenarios:
-#     1. Normal: has inventory at both start and end of season
-#     2. Retired during season: has start inventory, retired with lbs_remaining
-#     3. Used up but not retired: has start inventory, no end inventory (assume 0)
-#     4. No inventory at expected times: skip the lot
-#     """
-#     from decimal import Decimal
-#     from datetime import datetime
-    
-#     # Find all lots for this variety that had active status for this sales year
-#     active_lots = Lot.objects.filter(
-#         variety=variety,
-#         germinations__status='active',
-#         germinations__for_year=sales_year
-#     ).distinct()
-    
-#     total_usage = Decimal('0.00')
-#     lot_details = []
-#     lots_processed = 0
-#     retired_during_season_count = 0
-    
-#     # Define the sales year date ranges
-#     year_full = 2000 + int(sales_year)
-    
-#     # Start of season: Sept 1 - Nov 15 of PREVIOUS calendar year
-#     season_start_begin = datetime(year_full - 1, 9, 1)
-#     season_start_end = datetime(year_full - 1, 11, 15, 23, 59, 59)
-    
-#     # End of season: Sept 1 - Nov 15 of CURRENT calendar year
-#     season_end_begin = datetime(year_full, 9, 1)
-#     season_end_end = datetime(year_full, 11, 15, 23, 59, 59)
-        
-#     for lot in active_lots:
-#         # Get all inventory records for this lot, ordered by date
-#         inventory_records = lot.inventory.all().order_by('inv_date')
-#         inventory_count = inventory_records.count()
-        
-#         # Skip lots with no inventory records
-#         if inventory_count == 0:
-#             continue
-        
-#         # Find inventory at START of season
-#         start_inventory = inventory_records.filter(
-#             inv_date__gte=season_start_begin,
-#             inv_date__lte=season_start_end
-#         ).order_by('-inv_date').first()
-        
-#         # Find inventory at END of season
-#         end_inventory = inventory_records.filter(
-#             inv_date__gte=season_end_begin,
-#             inv_date__lte=season_end_end
-#         ).order_by('-inv_date').first()
-        
-#         # Determine start weight
-#         if start_inventory:
-#             start_weight = start_inventory.weight
-#         else:
-#             # No inventory at start of season - skip this lot for this year
-#             continue
-        
-#         # Determine end weight
-#         retired_during_season = False
-        
-#         if end_inventory:
-#             # Normal case: has inventory at end of season
-#             end_weight = end_inventory.weight
-#         elif hasattr(lot, 'retired_info'):
-#             # Retired during season
-#             end_weight = lot.retired_info.lbs_remaining
-#             retired_during_season = True
-#             retired_during_season_count += 1
-#         else:
-#             # No end inventory AND not retired
-#             # This means it was used up but never properly retired
-#             # Assume it was depleted to 0
-#             end_weight = Decimal('0.00')
-#             retired_during_season = True  # Effectively retired/depleted
-#             retired_during_season_count += 1
-        
-#         lot_usage = start_weight - end_weight
-#         lots_processed += 1
-        
-#         # Only count positive usage
-#         if lot_usage > 0:
-#             total_usage += lot_usage
-#             lot_details.append({
-#                 'lot_code': lot.get_four_char_lot_code(),
-#                 'start_weight': float(start_weight),
-#                 'end_weight': float(end_weight),
-#                 'usage': float(lot_usage),
-#                 'retired': retired_during_season
-#             })
-    
-#     # Check if ALL processed lots were retired/depleted during the season
-#     ran_out_of_seed = (
-#         lots_processed > 0 and 
-#         retired_during_season_count == lots_processed
-#     )
-    
-#     return {
-#         'total_lbs': float(total_usage),
-#         'lot_count': len(lot_details),
-#         'lots': lot_details,
-#         'sales_year': sales_year,
-#         'display_year': f"20{sales_year}",
-#         'ran_out_of_seed': ran_out_of_seed
-#     }
 def calculate_variety_usage(variety, sales_year):
     """
     Calculate how many lbs of a variety were used during a sales year.
@@ -2596,64 +1973,6 @@ def get_variety_lot_inventory(variety, current_order_year):
         'total_inventory': float(total_inventory),
         'years': years_to_check
     }
-# def get_variety_lot_inventory(variety, current_order_year):
-#     """
-#     Get all non-retired lots for a variety with their germination data
-#     for current year and two previous years, plus current inventory.
-#     """
-#     from decimal import Decimal
-    
-#     # Get all non-retired lots for this variety
-#     lots = Lot.objects.filter(
-#         variety=variety
-#     ).exclude(
-#         retired_info__isnull=False
-#     ).order_by('year', 'grower')
-    
-#     lot_data = []
-#     total_inventory = Decimal('0.00')
-    
-#     years_to_check = [
-#         current_order_year - 2,
-#         current_order_year - 1,
-#         current_order_year
-#     ]
-    
-#     for lot in lots:
-#         # Get most recent inventory
-#         recent_inv = lot.inventory.order_by('-inv_date').first()
-#         inv_weight = recent_inv.weight if recent_inv else Decimal('0.00')
-#         total_inventory += inv_weight
-        
-#         # Get germination data for each year
-#         germ_data = {}
-#         for year in years_to_check:
-#             germ = lot.germinations.filter(for_year=year).order_by('-test_date').first()
-#             if germ:
-#                 germ_data[year] = {
-#                     'rate': germ.germination_rate,
-#                     'has_test_date': germ.test_date is not None
-#                 }
-#             else:
-#                 germ_data[year] = None
-        
-#         lot_data.append({
-#             'lot_code': lot.get_four_char_lot_code(),  # CHANGED: Use short code
-#             'lot_id': lot.id,
-#             'germ_data': germ_data,
-#             'inventory': float(inv_weight),
-#             'inv_date': recent_inv.inv_date.strftime('%m/%Y') if recent_inv else None
-#         })
-    
-#     return {
-#         'lots': lot_data,
-#         'total_inventory': float(total_inventory),
-#         'years': years_to_check
-#     }
-
-
-
-
 
 
 @login_required(login_url='/office/login/')
@@ -2811,7 +2130,7 @@ def process_store_orders(request):
         variety_data[variety.sku_prefix] = {
             'common_spelling': variety.common_spelling,
             'var_name': variety.var_name,
-            'veg_type': variety.veg_type,  # or variety.veg_type if that's the field name
+            'crop': variety.crop, 
             'category': variety.category 
         }
    
@@ -2941,7 +2260,7 @@ def get_order_details(request, order_id):
                 formatted_items.append({
                     'sku_prefix': variety.sku_prefix,
                     'var_name': variety.var_name,
-                    'veg_type': variety.veg_type,
+                    'crop': variety.crop,
                     'quantity': item.quantity,
                     'category': variety.category,
                     'has_photo': item.photo  # Use the stored preference
@@ -3157,7 +2476,7 @@ def finalize_order(request):
                 {
                     'sku_prefix': include.product.variety.sku_prefix,
                     'variety_name': include.product.variety.var_name,
-                    'veg_type': include.product.variety.veg_type,
+                    'crop': include.product.variety.crop,
                     'quantity': include.quantity,
                     'has_photo': include.photo,
                     'price': float(include.price)
@@ -3186,7 +2505,6 @@ def add_variety(request):
             'common_spelling': request.POST.get('common_spelling', '').strip() or None,
             'common_name': request.POST.get('common_name', '').strip() or None,
             'group': request.POST.get('group', '').strip() or None,
-            'veg_type': request.POST.get('veg_type', '').strip() or None,
             'species': request.POST.get('species', '').strip() or None,
             'subtype': request.POST.get('subtype', '').strip() or None,
             'days': request.POST.get('days', '').strip() or None,
@@ -3625,7 +2943,7 @@ def get_stock_seed_data(request):
             return JsonResponse({
                 'success': True,
                 'variety_name': lot.variety.var_name,
-                'veg_type': lot.variety.veg_type or '',
+                'crop': lot.variety.crop or '',
                 'lot_number': lot_number,
                 'quantity': stock_seed.qty
             })
@@ -4081,7 +3399,6 @@ def edit_variety(request):
         variety.common_spelling = data.get('common_spelling', variety.common_spelling)
         variety.common_name = data.get('common_name', variety.common_name)
         variety.group = data.get('group', variety.group)
-        variety.veg_type = data.get('veg_type').upper() if data.get('veg_type') else None
         variety.species = data.get('species', variety.species)
         variety.supergroup = data.get('supergroup', variety.supergroup)
         variety.subtype = data.get('subtype', variety.subtype)
