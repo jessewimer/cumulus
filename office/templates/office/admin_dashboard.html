@@ -176,7 +176,7 @@
                         <input type="text" id="common_name" name="common_name">
                     </div>
 
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="group">Group</label>
                         <select id="group" name="group">
                             <option value="">Select a group...</option>
@@ -184,7 +184,7 @@
                                 <option value="{{ group }}">{{ group }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                    </div> {% endcomment %}
 
                     <div class="form-group">
                         <label for="species">Species</label>

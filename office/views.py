@@ -296,7 +296,7 @@ def view_variety(request, sku_prefix=None):  # Add optional parameter
         'env_types': settings.ENV_TYPES,
         'sku_suffixes': settings.SKU_SUFFIXES,
         'pkg_sizes': settings.PKG_SIZES,
-        'groups': settings.GROUPS,
+        # 'groups': settings.GROUPS,
         'categories': settings.CATEGORIES,
         'crops': settings.CROPS,
         'subtypes': settings.SUBTYPES,
@@ -1491,7 +1491,7 @@ def admin_dashboard(request):
         'sku_suffixes': settings.SKU_SUFFIXES,
         'env_types': settings.ENV_TYPES,
         'crops': settings.CROPS,
-        'groups': settings.GROUPS,
+        # 'groups': settings.GROUPS,
         'crop': settings.CROPS,
         'subtypes': settings.SUBTYPES,
         'categories': settings.CATEGORIES,
@@ -1557,7 +1557,7 @@ def germination_inventory_data(request):
         
         inventory_data = []
         categories = set()
-        groups = set()
+        # groups = set()
         crops = set()
         
         for lot in lots:
@@ -1566,8 +1566,8 @@ def germination_inventory_data(request):
             # Add to filter sets
             if variety.category:
                 categories.add(variety.category)
-            if variety.group:
-                groups.add(variety.group)
+            # if variety.group:
+            #     groups.add(variety.group)
             if variety.crop:
                 crops.add(variety.crop)
             
@@ -1663,7 +1663,7 @@ def germination_inventory_data(request):
                 'variety_name': variety.var_name,
                 'sku_prefix': variety.sku_prefix,
                 'category': variety.category,
-                'group': variety.group,
+                # 'group': variety.group,
                 'crop': variety.crop,
                 'species': variety.species,
                 'lot_code': lot_code,
@@ -1680,7 +1680,7 @@ def germination_inventory_data(request):
         
         # Convert sets to sorted lists
         categories = sorted(list(categories))
-        groups = sorted(list(groups))
+        # groups = sorted(list(groups))
         crops = sorted(list(crops))
         
         # print(f"Returning {len(inventory_data)} active lot records (retired lots excluded)")
@@ -1690,7 +1690,7 @@ def germination_inventory_data(request):
             'germ_years': germ_years,
             'current_year': current_year,  # New: the most recent germination year
             'categories': categories,
-            'groups': groups,
+            # 'groups': groups,
             'crops': crops,
             'germ_year': germ_year
         })
@@ -2502,7 +2502,7 @@ def add_variety(request):
             'crop': request.POST.get('crop', '').strip() or None,
             'common_spelling': request.POST.get('common_spelling', '').strip() or None,
             'common_name': request.POST.get('common_name', '').strip() or None,
-            'group': request.POST.get('group', '').strip() or None,
+            # 'group': request.POST.get('group', '').strip() or None,
             'species': request.POST.get('species', '').strip() or None,
             'subtype': request.POST.get('subtype', '').strip() or None,
             'days': request.POST.get('days', '').strip() or None,
@@ -3396,7 +3396,7 @@ def edit_variety(request):
         variety.crop = data.get('crop').upper() if data.get('crop') else None
         variety.common_spelling = data.get('common_spelling', variety.common_spelling)
         variety.common_name = data.get('common_name', variety.common_name)
-        variety.group = data.get('group', variety.group)
+        # variety.group = data.get('group', variety.group)
         variety.species = data.get('species', variety.species)
         variety.subtype = data.get('subtype', variety.subtype)
         variety.days = data.get('days', variety.days)

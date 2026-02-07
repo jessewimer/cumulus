@@ -6,7 +6,7 @@ let appData = {
     currentYear: null,
     germYear: null,
     categories: [],
-    groups: [],
+    // groups: [],
     crops: []
 };
 let currentBulkJob = null; 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Event listeners
 function setupEventListeners() {
     document.getElementById('categoryFilter').addEventListener('change', applyFilters);
-    document.getElementById('groupFilter').addEventListener('change', applyFilters);
+    // document.getElementById('groupFilter').addEventListener('change', applyFilters);
     document.getElementById('cropFilter').addEventListener('change', applyFilters);
     document.getElementById('websiteFilter').addEventListener('change', applyFilters);
     document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
@@ -183,7 +183,7 @@ function processLoadedData(data) {
     appData.currentYear = data.current_year;
     appData.germYear = data.germ_year;
     appData.categories = data.categories;
-    appData.groups = data.groups;
+    // appData.groups = data.groups;
     appData.crops = data.crops;
     
     setupTable();
@@ -208,11 +208,11 @@ function setupTable() {
 // Populate filters
 function populateFilters() {
     const categorySelect = document.getElementById('categoryFilter');
-    const groupSelect = document.getElementById('groupFilter');
+    // const groupSelect = document.getElementById('groupFilter');
     const cropSelect = document.getElementById('cropFilter');
 
     categorySelect.innerHTML = '<option value="">All Categories</option>';
-    groupSelect.innerHTML = '<option value="">All Groups</option>';
+    // groupSelect.innerHTML = '<option value="">All Groups</option>';
     cropSelect.innerHTML = '<option value="">All Crops</option>';
     appData.categories.forEach(category => {
         if (category) {
@@ -223,14 +223,14 @@ function populateFilters() {
         }
     });
 
-    appData.groups.forEach(group => {
-        if (group) {
-            const option = document.createElement('option');
-            option.value = group;
-            option.textContent = group;
-            groupSelect.appendChild(option);
-        }
-    });
+    // appData.groups.forEach(group => {
+    //     if (group) {
+    //         const option = document.createElement('option');
+    //         option.value = group;
+    //         option.textContent = group;
+    //         groupSelect.appendChild(option);
+    //     }
+    // });
 
     appData.crops.forEach(crop => {
         if (crop) {
@@ -245,7 +245,7 @@ function populateFilters() {
 // Apply filters
 function applyFilters() {
     const categoryFilter = document.getElementById('categoryFilter').value;
-    const groupFilter = document.getElementById('groupFilter').value;
+    // const groupFilter = document.getElementById('groupFilter').value;
     const cropFilter = document.getElementById('cropFilter').value;
     const websiteFilter = document.getElementById('websiteFilter').value; // ADD THIS
 
@@ -257,7 +257,7 @@ function applyFilters() {
         }
         
         return (!categoryFilter || lot.category === categoryFilter) &&
-                (!groupFilter || lot.group === groupFilter) &&
+                // (!groupFilter || lot.group === groupFilter) &&
                 (!cropFilter || lot.crop === cropFilter) &&
                 websiteMatch; // ADD THIS
     });
@@ -268,7 +268,7 @@ function applyFilters() {
 // Clear filters
 function clearFilters() {
     document.getElementById('categoryFilter').value = '';
-    document.getElementById('groupFilter').value = '';
+    // document.getElementById('groupFilter').value = '';
     document.getElementById('cropFilter').value = '';
     document.getElementById('websiteFilter').value = '';
     appData.filteredLots = [...appData.allLots];

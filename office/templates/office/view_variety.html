@@ -1411,7 +1411,7 @@
                         <label>Common Name</label>
                         <input type="text" id="editCommonName" value="{{ variety.common_name|default:'' }}">
                     </div>
-
+{% comment %} 
                     <div class="form-group">
                         <label>Group</label>
                         <select id="editGroup">
@@ -1420,7 +1420,7 @@
                             <option value="{{ group }}" {% if variety.group and variety.group == group %}selected{% endif %}>{{ group }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                    </div> {% endcomment %}
 
                     <div class="form-group">
                         <label>Species</label>
