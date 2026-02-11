@@ -107,4 +107,6 @@ urlpatterns = [
     path('update-variety-wholesale/', update_variety_wholesale, name='update_variety_wholesale'),
     path('variety-usage/<str:sku_prefix>/', variety_usage, name='variety_usage'),
     path('update-product-scoop-size/', update_product_scoop_size, name='update_product_scoop_size'),
+
+    path('variety/<str:sku_prefix>/update_notes/', update_variety_notes, name='update_variety_notes'),
 ]

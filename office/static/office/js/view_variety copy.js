@@ -1,6 +1,10 @@
 
-
+// const varietyDataString = '{{ all_vars_json|escapejs }}';
+// const packedForYear = '{{ packed_for_year }}'; // e.g., "26" or "25"
+// const isTransition = JSON.parse('{{ transition|yesno:"true,false"|lower }}');
+// const lotsExtraData = JSON.parse('{{ lots_extra_data|escapejs }}');
 let allVarieties = JSON.parse(varietyDataString);
+// const lotsDataString = '{{ lots_json|escapejs }}';
 let allLotsData = JSON.parse(lotsDataString);
 let availableLots = JSON.parse(lotsDataString);
 let currentLotId = null;
@@ -19,7 +23,6 @@ let selectedPrintOption = 'front_single';
 let passwordCallback = null;
 let passwordParams = null;
 let bulkPrePackDecision = null;
-let originalNotes = '';
 
 
 function showPasswordPopup(callback, params) {
@@ -46,7 +49,7 @@ function hidePasswordPopup() {
 function verifyPassword() {
     const password = document.getElementById('passwordInput').value;
     
-    if (password === 'uprising') {
+    if (password === 'cumulus') {
         console.log('Password correct!');
         console.log('Callback:', passwordCallback);
         console.log('Params:', passwordParams);
@@ -157,57 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
     styleInventoryDisplays();
 });
 
-
-
-// // Search setup
-// function setupSearch() {
-//     const searchInput = document.getElementById('varietySearch');
-//     const searchDropdown = document.getElementById('searchDropdown');
-
-//     searchInput.addEventListener('input', function() {
-//         const query = this.value.toLowerCase().trim();
-//         // console.log('Searching for:', query);
-        
-//         if (query.length < 2) {
-//             searchDropdown.classList.remove('show');
-//             return;
-//         }
-
-//         // Search through common_spelling and crop
-//         const matches = [];
-
-//         for (const [skuPrefix, data] of Object.entries(allVarieties)) {
-//             const matchesCommonSpelling = data.common_spelling && data.common_spelling.toLowerCase().includes(query);
-//             // const matchesCrop = data.crop && data.crop.toLowerCase().includes(query);
-//             const matchesCrop = data.crop && data.crop.toLowerCase().includes(query);
-            
-//             if (matchesCommonSpelling || matchesCrop || matchesCrop) {
-//                 matches.push([skuPrefix, data]);
-//             }
-//         }
-
-//         if (matches.length > 0) {
-
-//             searchDropdown.innerHTML = matches.map(([skuPrefix, data]) => `
-//                 <div class="dropdown-item" onclick="selectVariety('${skuPrefix}')">
-//                     <div class="dropdown-variety-name">${data.var_name || data.common_spelling}</div>
-//                     <div class="dropdown-variety-type">${data.crop || ''}</div>
-//                 </div>
-//             `).join('');
-//             searchDropdown.classList.add('show');
-//         } else {
-//             searchDropdown.innerHTML = '<div class="dropdown-item"><div class="dropdown-variety-name">No matches found</div></div>';
-//             searchDropdown.classList.add('show');
-//         }
-//     });
-
-//     // Close dropdown when clicking outside
-//     document.addEventListener('click', function(e) {
-//         if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-//             searchDropdown.classList.remove('show');
-//         }
-//     });
-// }
 // Search setup
 function setupSearch() {
     const searchInput = document.getElementById('varietySearch');
@@ -271,7 +223,6 @@ function setupSearch() {
         }
     });
 }
-
 
 function selectVariety(sku) {
     console.log('selectVariety called with sku:', sku);
@@ -614,19 +565,11 @@ function changeProductLot(productId) {
     editProductLot(productId); // Your existing function
 }
 
-
 function editProduct(productId) {
     hideProductActionsPopup();
-    // if (requirePassword) {
-    //     showPasswordPopup(proceedWithEditProduct, productId);
-    // } else {
+    // showPasswordPopup(proceedWithEditProduct, productId);
     proceedWithEditProduct(productId);
-    // }
 }
-// function editProduct(productId) {
-//     hideProductActionsPopup();
-//     showPasswordPopup(proceedWithEditProduct, productId);
-// }
 
 function proceedWithEditProduct(productId) {
     console.log('proceedWithEditProduct called with:', productId); // DEBUG
@@ -662,425 +605,6 @@ function proceedWithEditProduct(productId) {
 }
 
 
-
-
-
-
-
-
-
-function toggleNotesEdit() {
-    const display = document.getElementById('notes-display');
-    const textarea = document.getElementById('notes-textarea');
-    const editBtn = document.getElementById('notes-edit-btn');
-    const saveBtn = document.getElementById('notes-save-btn');
-    const cancelBtn = document.getElementById('notes-cancel-btn');
-    
-    originalNotes = textarea.value;
-    
-    // Hide display and edit button, show textarea and action buttons
-    display.style.display = 'none';
-    textarea.style.display = 'block';
-    editBtn.style.display = 'none';
-    saveBtn.style.display = 'inline-block';
-    cancelBtn.style.display = 'inline-block';
-    
-    textarea.focus();
-}
-
-
-
-
-
-
-
-
-function checkShopifyInventory() {
-    const skuPrefix = VARIETY_SKU_PREFIX;
-    
-    if (!skuPrefix) {
-        alert('No variety SKU prefix available');
-        return;
-    }
-    
-    // Hide variety actions popup
-    hideVarietyActionsPopup();
-    
-    // Show Shopify popup
-    const shopifyPopup = document.getElementById('shopifyInventoryPopup');
-    if (!shopifyPopup) {
-        alert('Shopify popup element not found');
-        return;
-    }
-    
-    shopifyPopup.style.display = 'flex';
-    document.getElementById('shopify-inventory-content').innerHTML = '<p>Loading Shopify inventory...</p>';
-    
-    // Fetch data
-    fetch(`/office/api/check-shopify-inventory/${encodeURIComponent(skuPrefix)}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                displayShopifyResults(data);
-            } else {
-                document.getElementById('shopify-inventory-content').innerHTML = 
-                    `<p style="color: red;">Error: ${data.error}</p>`;
-            }
-        })
-        .catch(error => {
-            document.getElementById('shopify-inventory-content').innerHTML = 
-                `<p style="color: red;">Failed: ${error.message}</p>`;
-        });
-}
-
-
-function displayShopifyResults(data) {
-    const statusIcon = data.website_bulk 
-        ? '<span style="color: #28a745; font-size: 20px;">✓</span>' 
-        : '<span style="color: #dc3545; font-size: 20px;">✗</span>';
-    
-    let html = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0;">Found ${data.total_found} variants with SKU prefix "${data.sku_prefix}"</h3>
-            <div style="font-size: 16px; font-weight: 600;">
-                Status: ${statusIcon}
-            </div>
-        </div>
-    `;
-    
-    html += '<table class="usage-table">';
-    html += '<thead><tr><th>Product</th><th>Variant</th><th>SKU</th><th>Inventory</th><th>Price</th></tr></thead>';
-    html += '<tbody>';
-    
-    data.variants.forEach(variant => {
-        html += '<tr>';
-        html += `<td>${variant.product_title}</td>`;
-        html += `<td>${variant.variant_title}</td>`;
-        html += `<td>${variant.sku}</td>`;
-        html += `<td>${variant.inventory_quantity}</td>`;
-        html += `<td>$${variant.price}</td>`;
-        html += '</tr>';
-    });
-    
-    html += '</tbody></table>';
-    
-    document.getElementById('shopify-inventory-content').innerHTML = html;
-}
-// function displayShopifyResults(data) {
-//     let html = `<h3 style="margin-bottom: 15px;">Found ${data.total_found} variants with SKU prefix "${data.sku_prefix}"</h3>`;
-//     html += '<table class="usage-table">';
-//     html += '<thead><tr><th>Product</th><th>Variant</th><th>SKU</th><th>Inventory</th><th>Price</th></tr></thead>';
-//     html += '<tbody>';
-    
-//     data.variants.forEach(variant => {
-//         html += '<tr>';
-//         html += `<td>${variant.product_title}</td>`;
-//         html += `<td>${variant.variant_title}</td>`;
-//         html += `<td>${variant.sku}</td>`;
-//         html += `<td>${variant.inventory_quantity}</td>`;
-//         html += `<td>$${variant.price}</td>`;
-//         html += '</tr>';
-//     });
-    
-//     html += '</tbody></table>';
-    
-//     document.getElementById('shopify-inventory-content').innerHTML = html;
-// }
-
-function closeShopifyInventoryPopup() {
-    const popup = document.getElementById('shopifyInventoryPopup');
-    if (popup) {
-        popup.style.display = 'none';
-    }
-}
-
-// Close Shopify popup when clicking outside
-document.addEventListener('click', function(e) {
-    const popup = document.getElementById('shopifyInventoryPopup');
-    if (popup && e.target === popup) {
-        closeShopifyInventoryPopup();
-    }
-});
-
-// function checkShopifyInventory() {
-//     console.log('=== START checkShopifyInventory ===');
-    
-//     const skuPrefix = VARIETY_SKU_PREFIX;
-//     console.log('skuPrefix:', skuPrefix);
-    
-//     if (!skuPrefix) {
-//         alert('No variety SKU prefix available');
-//         return;
-//     }
-    
-//     // Close variety actions popup - CORRECT ID!
-//     const varietyPopup = document.getElementById('varietyActionsPopup');
-//     console.log('varietyPopup found:', varietyPopup);
-    
-//     if (varietyPopup) {
-//         varietyPopup.style.display = 'none';
-//         console.log('Closed variety actions popup');
-//     }
-    
-//     // Show Shopify popup
-//     const shopifyPopup = document.getElementById('shopify-inventory-popup');
-//     console.log('shopifyPopup found:', shopifyPopup);
-    
-//     if (!shopifyPopup) {
-//         console.error('SHOPIFY POPUP NOT FOUND!');
-//         alert('Shopify popup element not found');
-//         return;
-//     }
-    
-//     shopifyPopup.style.display = 'block';
-//     console.log('Set shopifyPopup display to block');
-    
-//     document.getElementById('shopify-inventory-content').innerHTML = '<p>Loading Shopify inventory...</p>';
-    
-//     // Fetch data
-//     const url = `/office/api/check-shopify-inventory/${encodeURIComponent(skuPrefix)}/`;
-//     console.log('Fetching:', url);
-    
-//     fetch(url)
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log('Data received:', data);
-//             if (data.success) {
-//                 displayShopifyResults(data);
-//             } else {
-//                 document.getElementById('shopify-inventory-content').innerHTML = 
-//                     `<p style="color: red;">Error: ${data.error}</p>`;
-//             }
-//         })
-//         .catch(error => {
-//             console.error('Fetch error:', error);
-//             document.getElementById('shopify-inventory-content').innerHTML = 
-//                 `<p style="color: red;">Failed: ${error.message}</p>`;
-//         });
-// }
-
-
-// function displayShopifyResults(data) {
-//     let html = `<h3>Found ${data.total_found} variants with SKU prefix "${data.sku_prefix}"</h3>`;
-//     html += '<table class="usage-table">';
-//     html += '<thead><tr><th>Product</th><th>Variant</th><th>SKU</th><th>Inventory</th><th>Price</th></tr></thead>';
-//     html += '<tbody>';
-    
-//     data.variants.forEach(variant => {
-//         html += '<tr>';
-//         html += `<td>${variant.product_title}</td>`;
-//         html += `<td>${variant.variant_title}</td>`;
-//         html += `<td>${variant.sku}</td>`;
-//         html += `<td>${variant.inventory_quantity}</td>`;
-//         html += `<td>$${variant.price}</td>`;
-//         html += '</tr>';
-//     });
-    
-//     html += '</tbody></table>';
-    
-//     document.getElementById('shopify-inventory-content').innerHTML = html;
-// }
-
-// function closeShopifyInventoryPopup() {
-//     document.getElementById('shopify-inventory-popup').style.display = 'none';
-// }
-
-
-// function checkShopifyInventory() {
-//     try {
-//         console.log('=== checkShopifyInventory CALLED ===');
-//         console.log('VARIETY_SKU_PREFIX value:', VARIETY_SKU_PREFIX);
-//         console.log('typeof VARIETY_SKU_PREFIX:', typeof VARIETY_SKU_PREFIX);
-        
-//         const skuPrefix = VARIETY_SKU_PREFIX;
-        
-//         if (!skuPrefix) {
-//             console.error('STOPPING: No skuPrefix found!');
-//             alert('No variety SKU prefix available');
-//             return;
-//         }
-        
-//         console.log('PASSED skuPrefix check, continuing...');
-//         console.log('About to close lot-actions-popup');
-        
-//         // Close the variety actions popup
-//         const lotActionsPopup = document.getElementById('lot-actions-popup');
-//         console.log('lotActionsPopup element:', lotActionsPopup);
-//         if (lotActionsPopup) {
-//             lotActionsPopup.style.display = 'none';
-//             console.log('Closed lot-actions-popup');
-//         }
-        
-//         // Close the overlay if it exists
-//         const overlay = document.getElementById('popup-overlay');
-//         if (overlay) {
-//             overlay.style.display = 'none';
-//         }
-        
-//         console.log('About to open shopify-inventory-popup');
-        
-//         // Open the Shopify inventory popup
-//         const shopifyPopup = document.getElementById('shopify-inventory-popup');
-//         console.log('shopifyPopup element:', shopifyPopup);
-        
-//         if (!shopifyPopup) {
-//             console.error('shopify-inventory-popup element not found!');
-//             alert('Shopify popup element not found. Check HTML.');
-//             return;
-//         }
-        
-//         // Make sure popup is visible with proper styling
-//         shopifyPopup.style.display = 'flex';
-//         shopifyPopup.style.position = 'fixed';
-//         shopifyPopup.style.zIndex = '10000';
-//         shopifyPopup.style.left = '0';
-//         shopifyPopup.style.top = '0';
-//         shopifyPopup.style.width = '100%';
-//         shopifyPopup.style.height = '100%';
-//         shopifyPopup.style.backgroundColor = 'rgba(0,0,0,0.4)';
-//         shopifyPopup.style.alignItems = 'center';
-//         shopifyPopup.style.justifyContent = 'center';
-        
-//         console.log('Set popup display and styles');
-        
-//         const contentDiv = document.getElementById('shopify-inventory-content');
-//         console.log('contentDiv:', contentDiv);
-//         contentDiv.innerHTML = '<p>Loading Shopify inventory...</p>';
-//         console.log('Set loading message');
-        
-//         const url = `/office/api/check-shopify-inventory/${encodeURIComponent(skuPrefix)}/`;
-//         console.log('Fetching URL:', url);
-
-//         fetch(url)
-//             .then(response => {
-//                 console.log('Response received. Status:', response.status);
-//                 console.log('Response ok:', response.ok);
-//                 if (!response.ok) {
-//                     throw new Error(`HTTP error! status: ${response.status}`);
-//                 }
-//                 return response.json();
-//             })
-//             .then(data => {
-//                 console.log('Data parsed:', data);
-//                 if (data.success) {
-//                     displayShopifyResults(data);
-//                 } else {
-//                     console.error('API returned error:', data.error);
-//                     document.getElementById('shopify-inventory-content').innerHTML = 
-//                         `<p style="color: red;">Error: ${data.error}</p>`;
-//                 }
-//             })
-//             .catch(error => {
-//                 console.error('Fetch error:', error);
-//                 console.error('Error stack:', error.stack);
-//                 document.getElementById('shopify-inventory-content').innerHTML = 
-//                     `<p style="color: red;">Failed to check Shopify inventory: ${error.message}</p>`;
-//             });
-//     } catch (error) {
-//         console.error('=== CAUGHT ERROR IN checkShopifyInventory ===');
-//         console.error('Error:', error);
-//         console.error('Error message:', error.message);
-//         console.error('Error stack:', error.stack);
-//         alert('Error: ' + error.message);
-//     }
-// }
-
-
-// function displayShopifyResults(data) {
-//     console.log('=== displayShopifyResults CALLED ===');
-//     console.log('Displaying results for', data.total_found, 'variants');
-    
-//     let html = `<h3>Found ${data.total_found} variants with SKU prefix "${data.sku_prefix}"</h3>`;
-//     html += '<table class="usage-table">';
-//     html += '<thead><tr><th>Product</th><th>Variant</th><th>SKU</th><th>Inventory</th><th>Price</th></tr></thead>';
-//     html += '<tbody>';
-    
-//     data.variants.forEach(variant => {
-//         html += '<tr>';
-//         html += `<td>${variant.product_title}</td>`;
-//         html += `<td>${variant.variant_title}</td>`;
-//         html += `<td>${variant.sku}</td>`;
-//         html += `<td>${variant.inventory_quantity}</td>`;
-//         html += `<td>$${variant.price}</td>`;
-//         html += '</tr>';
-//     });
-    
-//     html += '</tbody></table>';
-    
-//     document.getElementById('shopify-inventory-content').innerHTML = html;
-// }
-
-// function closeShopifyInventoryPopup() {
-//     console.log('=== closeShopifyInventoryPopup CALLED ===');
-//     document.getElementById('shopify-inventory-popup').style.display = 'none';
-// }
-
-
-
-
-
-
-
-
-function cancelNotesEdit() {
-    const display = document.getElementById('notes-display');
-    const textarea = document.getElementById('notes-textarea');
-    const editBtn = document.getElementById('notes-edit-btn');
-    const saveBtn = document.getElementById('notes-save-btn');
-    const cancelBtn = document.getElementById('notes-cancel-btn');
-    
-    // Restore original value
-    textarea.value = originalNotes;
-    
-    // Force reload to reset display to original state
-    location.reload();
-}
-
-
-
-
-async function saveNotes() {
-    const textarea = document.getElementById('notes-textarea');
-    const newNotes = textarea.value;
-    
-    try {
-        const response = await fetch(`/office/variety/${VARIETY_SKU_PREFIX}/update_notes/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({ var_notes: newNotes })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            const display = document.getElementById('notes-display');
-            const editBtn = document.getElementById('notes-edit-btn');
-            const saveBtn = document.getElementById('notes-save-btn');
-            const cancelBtn = document.getElementById('notes-cancel-btn');
-            
-            // Update display text
-            display.innerHTML = newNotes ? newNotes.replace(/\n/g, '<br>') : 'No notes available';
-            
-            // Show display and edit button, hide textarea and action buttons
-            display.style.display = 'block';
-            textarea.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            
-            showMessage('Notes updated successfully', 'success');
-        } else {
-            showMessage('Error updating notes: ' + (data.message || 'Unknown error'), 'error');
-        }
-    } catch (error) {
-        console.error('Error updating notes:', error);
-        showMessage('Network error occurred while saving notes', 'error');
-    }
-}
-
 // Edit Variety Functions
 function openEditVarietyPopup() {
     console.log('openEditVarietyPopup called');
@@ -1100,7 +624,7 @@ function saveVarietyChanges() {
         crop: document.getElementById('editCrop').value,
         common_spelling: document.getElementById('editCommonSpelling').value,
         common_name: document.getElementById('editCommonName').value,
-        group: document.getElementById('editGroup').value,
+        // group: document.getElementById('editGroup').value,
         species: document.getElementById('editSpecies').value,
         subtype: document.getElementById('editSubtype').value,
         days: document.getElementById('editDays').value,
@@ -1117,7 +641,7 @@ function saveVarietyChanges() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(formData)
     })
@@ -1168,7 +692,7 @@ function submitEditProduct(event) {
         formData.append('is_sub_product', 'on');
     }
     
-    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
     
     fetch('/office/edit-product/', {
         method: 'POST',
@@ -1238,7 +762,7 @@ function viewProductPackingHistory(productId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             product_id: productId
@@ -1399,7 +923,7 @@ function submitEditPackingRecord(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             record_id: currentPackingRecordId,
@@ -1455,7 +979,7 @@ function confirmDeletePackingRecord() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             record_id: currentPackingRecordId
@@ -1681,8 +1205,6 @@ function continuePrintDespiteBackMismatch() {
     proceedWithActualPrint();
 }
 
-
-
 function proceedWithActualPrint() {
     const quantity = document.getElementById('printQuantity').value;
     
@@ -1706,46 +1228,8 @@ function proceedWithActualPrint() {
     printBtn.textContent = 'Printing...';
 
     try {
-        // Get the original product row
-        const originalProductRow = document.querySelector(`tr[data-product-id="${currentProductId}"]`);
-        if (!originalProductRow) {
-            showMessage('Could not find product data', 'error');
-            resetPrintButtons(printBtn, cancelBtn, popup, originalPrintText);
-            return;
-        }
-
-        // Check if we need to use alt_sku
-        const skuSuffix = originalProductRow.dataset.skuSuffix;
-        const altSku = originalProductRow.dataset.altSku;
-        const envMultiplier = originalProductRow.dataset.envMultiplier;
-        
-        let printData;
-        let actualQuantity = parseInt(quantity);
-        
-        // If this is a bulk item with alt_sku and env_multiplier, use the alt_sku product data
-        if (skuSuffix && skuSuffix.toLowerCase() !== 'pkt' && altSku && envMultiplier) {
-            // Find the product row where the complete SKU matches alt_sku
-            // Complete SKU = variety sku_prefix + product sku_suffix
-            const altProductRow = Array.from(document.querySelectorAll('tr[data-product-id]')).find(row => {
-                const rowCompleteSku = `${VARIETY_SKU_PREFIX}-${row.dataset.skuSuffix}`;
-                return rowCompleteSku === altSku;
-            });
-            
-            if (!altProductRow) {
-                showMessage(`Could not find alt_sku product: ${altSku}`, 'error');
-                resetPrintButtons(printBtn, cancelBtn, popup, originalPrintText);
-                return;
-            }
-            
-            // Use alt product data but multiply quantity by env_multiplier
-            actualQuantity = parseInt(quantity) * parseInt(envMultiplier);
-            printData = collectPrintData(currentProductId, actualQuantity, altProductRow);
-            
-            console.log(`Using alt_sku: ${altSku}, multiplied quantity: ${quantity} × ${envMultiplier} = ${actualQuantity}`);
-        } else {
-            // Normal printing - use original product data
-            printData = collectPrintData(currentProductId, actualQuantity);
-        }
+        // Collect all data from the page
+        const printData = collectPrintData(currentProductId, quantity);
         
         if (!printData) {
             showMessage('Could not collect print data', 'error');
@@ -1788,7 +1272,7 @@ function proceedWithActualPrint() {
                 // Step 2: Calculate bulk_pre_pack quantity if needed
                 let bulkPrePackQty = 0;
                 if (bulkPrePackDecision === true) {
-                    bulkPrePackQty = parseInt(quantity);  // Use ORIGINAL quantity for bulk pre-pack
+                    bulkPrePackQty = parseInt(quantity);
                     if (selectedPrintOption === 'front_sheet' || selectedPrintOption === 'front_back_sheet') {
                         bulkPrePackQty *= 30;
                     }
@@ -1799,12 +1283,12 @@ function proceedWithActualPrint() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCSRFToken()
+                        'X-CSRFToken': getCookie('csrftoken')
                     },
                     body: JSON.stringify({
-                        product_id: currentProductId,  // Use ORIGINAL product ID
+                        product_id: currentProductId,
                         print_type: selectedPrintOption,
-                        quantity: quantity,  // Use ORIGINAL quantity for record
+                        quantity: quantity,
                         packed_for_year: printData.for_year,
                         add_to_bulk_pre_pack: bulkPrePackDecision === true,
                         bulk_pre_pack_qty: bulkPrePackQty
@@ -1814,7 +1298,7 @@ function proceedWithActualPrint() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    let message = `Successfully printed ${actualQuantity} ${selectedPrintOption.replace('_', ' ')} label(s)`;
+                    let message = `Successfully printed ${quantity} ${selectedPrintOption.replace('_', ' ')} label(s)`;
                     if (bulkPrePackDecision === true) {
                         message += ` and added to bulk pre-pack`;
                     }
@@ -1848,7 +1332,113 @@ function proceedWithActualPrint() {
         bulkPrePackDecision = null;
     }
 }
+// function proceedWithActualPrint() {
+//     const quantity = document.getElementById('printQuantity').value;
+    
+//     if (!currentProductId || !quantity || quantity < 1) {
+//         showMessage('Please enter a valid quantity', 'error');
+//         return;
+//     }
 
+//     // Disable buttons and show loading state immediately
+//     const printBtn = document.querySelector('.print-btn');
+//     const cancelBtn = document.querySelector('.cancel-btn');
+//     const popup = document.querySelector('.print-popup');
+    
+//     printBtn.disabled = true;
+//     cancelBtn.disabled = true;
+//     printBtn.classList.add('loading');
+//     popup.classList.add('loading');
+    
+//     // Change button text to indicate loading
+//     const originalPrintText = printBtn.textContent;
+//     printBtn.textContent = 'Printing...';
+
+//     try {
+//         // Collect all data from the page
+//         const printData = collectPrintData(currentProductId, quantity);
+        
+//         if (!printData) {
+//             showMessage('Could not collect print data', 'error');
+//             resetPrintButtons(printBtn, cancelBtn, popup, originalPrintText);
+//             return;
+//         }
+
+//         // Determine Flask endpoints based on print option
+//         const endpoints = getFlaskEndpoints(selectedPrintOption);
+        
+//         if (endpoints.length === 0) {
+//             showMessage('Invalid print option selected', 'error');
+//             resetPrintButtons(printBtn, cancelBtn, popup, originalPrintText);
+//             return;
+//         }
+
+//         console.log('Sending to Flask:', printData);
+
+//         // Step 1: Send to Flask for printing - SEQUENTIALLY to maintain order
+//         let printPromise = Promise.resolve();
+        
+//         endpoints.forEach(endpoint => {
+//             printPromise = printPromise.then(() => 
+//                 fetch(`http://localhost:5000${endpoint}`, {
+//                     method: 'POST',
+//                     headers: { 'Content-Type': 'application/json' },
+//                     body: JSON.stringify(printData)
+//                 })
+//                 .then(response => {
+//                     if (!response.ok) {
+//                         throw new Error(`Flask endpoint ${endpoint} failed`);
+//                     }
+//                     return response;
+//                 })
+//             );
+//         });
+
+//         printPromise
+//             .then(() => {
+//                 // Step 2: Record print job in Django after all printing is complete
+//                 return fetch('/office/print-product-labels/', {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                         'X-CSRFToken': getCookie('csrftoken')
+//                     },
+//                     body: JSON.stringify({
+//                         product_id: currentProductId,
+//                         print_type: selectedPrintOption,
+//                         quantity: quantity,
+//                         packed_for_year: printData.for_year
+//                     })
+//                 });
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     showMessage(`Successfully printed ${quantity} ${selectedPrintOption.replace('_', ' ')} label(s)`, 'success');
+//                     hidePrintPopup(); // This will reset the buttons when popup closes
+//                     // Refresh page after 2 seconds to show updated print count
+//                     setTimeout(() => {
+//                         window.location.href = window.location.pathname;
+//                     }, 2000);
+//                 } else {
+//                     showMessage('Print sent but failed to record: ' + (data.error || 'Unknown error'), 'error');
+//                     hidePrintPopup(); // This will reset the buttons when popup closes
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error('Print job error:', error);
+//                 console.log('This is the data that would be sent to Flask:', printData);
+//                 showMessage('Printing failed: ' + error.message, 'error');
+//                 resetPrintButtons(printBtn, cancelBtn, popup, originalPrintText);
+//             });
+
+//     } catch (error) {
+//         console.error('Data collection error:', error);
+//         console.log('This is the data that would be sent to Flask: [Data collection failed]');
+//         showMessage('Failed to collect print data', 'error');
+//         resetPrintButtons(printBtn, cancelBtn, popup, originalPrintText);
+//     }
+// }
 
 // Helper function to reset button states
 function resetPrintButtons(printBtn, cancelBtn, popup, originalText) {
@@ -1859,9 +1449,10 @@ function resetPrintButtons(printBtn, cancelBtn, popup, originalText) {
     printBtn.textContent = originalText;
 }
 
-function collectPrintData(productId, quantity, overrideProductRow = null) {
-    // Use override row if provided, otherwise find by productId
-    const productRow = overrideProductRow || document.querySelector(`tr[data-product-id="${productId}"]`);
+
+
+function collectPrintData(productId, quantity) {
+    const productRow = document.querySelector(`tr[data-product-id="${productId}"]`);
     if (!productRow) return null;
     
     // Get the selected year from either input or dropdown
@@ -1889,7 +1480,7 @@ function collectPrintData(productId, quantity, overrideProductRow = null) {
         env_type: productRow.dataset.envType,
         lot_code: productRow.dataset.lotCode,
         germination: productRow.dataset.germination,
-        for_year: selectedYear,
+        for_year: selectedYear, // Use the selected year instead of fixed value
         rad_type: productRow.dataset.radType,
         desc1: productRow.dataset.desc1,
         desc2: productRow.dataset.desc2,
@@ -1903,6 +1494,7 @@ function collectPrintData(productId, quantity, overrideProductRow = null) {
         back7: productRow.dataset.back7
     };
 }
+
 
 function getFlaskEndpoints(printOption) {
     const endpointMap = {
@@ -1975,7 +1567,7 @@ function submitEditFrontLabels(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(labelData)
     })
@@ -2034,7 +1626,7 @@ function submitEditBackLabels(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(labelData)
     })
@@ -2372,7 +1964,7 @@ function viewLotHistory(lotId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             lot_id: lotId
@@ -2723,7 +2315,7 @@ function submitAddLot(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             variety_sku: VARIETY_SKU_PREFIX,
@@ -2805,6 +2397,31 @@ function showLotSelectionPopup(productId, lots) {
     
     popup.classList.add('show');
 }
+// function showLotSelectionPopup(productId, lots) {
+//     const popup = document.getElementById('lotSelectionPopup');
+//     const lotsContainer = document.getElementById('availableLots');
+    
+//     // Clear previous lots
+//     lotsContainer.innerHTML = '';
+    
+//     // Add lots as clickable buttons
+//     lots.forEach(lot => {
+//         const button = document.createElement('button');
+//         button.className = 'lot-option-btn';
+//         button.textContent = `${lot.grower}${lot.year}${lot.harvest}`;
+//         button.onclick = () => assignLotToProduct(productId, lot.id);
+//         lotsContainer.appendChild(button);
+//     });
+    
+//     // Add "No Lot" option
+//     const noLotButton = document.createElement('button');
+//     noLotButton.className = 'lot-option-btn no-lot';
+//     noLotButton.textContent = 'No Lot Assigned';
+//     noLotButton.onclick = () => assignLotToProduct(productId, null);
+//     lotsContainer.appendChild(noLotButton);
+    
+//     popup.classList.add('show');
+// }
 
 function assignLotToProduct(productId, lotId) {
     
@@ -2826,7 +2443,7 @@ function assignLotToProduct(productId, lotId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(requestData)
     })
@@ -2854,6 +2471,49 @@ function assignLotToProduct(productId, lotId) {
     
     hideLotSelectionPopup();
 }
+// function assignLotToProduct(productId, lotId) {
+    
+
+//     // Check if the "change all products" checkbox is checked
+//     const changeAllCheckbox = document.getElementById('changeAllProductsCheckbox');
+//     const changeAllProducts = changeAllCheckbox ? changeAllCheckbox.checked : false;
+    
+//     fetch('/office/assign-lot-to-product/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': getCookie('csrftoken')
+//         },
+//         body: JSON.stringify({
+//             product_id: productId,
+//             lot_id: lotId,
+//             change_all_products: changeAllProducts
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             // Show appropriate success message
+//             const message = changeAllProducts 
+//                 ? `Lot updated for all products in this variety`
+//                 : `Lot updated for selected product`;
+//             showMessage(message, 'success');
+            
+//             setTimeout(() => {
+//                 window.location.href = window.location.pathname;
+//             }, 2000);
+//         } else {
+//             showMessage('Error assigning lot: ' + (data.error || 'Unknown error'), 'error');
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//         showMessage('Network error occurred', 'error');
+//     });
+    
+//     hideLotSelectionPopup();
+// }
+
 
 
 function hideLotSelectionPopup() {
@@ -2916,7 +2576,7 @@ function setLotLowInv(isLowInv) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             lot_id: currentLotId,
@@ -2976,6 +2636,34 @@ function retireLot(lotId) {
         document.getElementById('retireDateInput').value = today;
     }, 10);
 }
+// function retireLot(lotId) {
+//     hideLotActionsPopup();
+    
+//     currentLotId = lotId;
+    
+//     // Find the lot data to display variety and lot info
+//     const lot = allLotsData.find(l => l.id == lotId);
+//     let title = "Retire Lot";
+    
+//     if (lot) {
+//         const varietyName = document.getElementById('varietyName').textContent.trim();
+//         const lotDisplay = `${lot.grower}${lot.year}${lot.harvest}`;
+//         title = `Retiring ${varietyName} ${lotDisplay}`;
+//     }
+    
+//     // Reset the form to clear previous values
+//     document.getElementById('retireLotForm').reset();
+    
+//     // Update title and show popup
+//     document.getElementById('retireLotTitle').textContent = title;
+//     document.getElementById('retireLotPopup').classList.add('show');
+    
+//     // Set today's date as default AFTER showing popup
+//     setTimeout(() => {
+//         const today = new Date().toISOString().split('T')[0];
+//         document.getElementById('retireDateInput').value = today;
+//     }, 10);
+// }
 
 
 function hideRetireLotPopup() {
@@ -3010,7 +2698,7 @@ function submitRetireLot(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(requestData)
     })
@@ -3035,6 +2723,53 @@ function submitRetireLot(event) {
     
     hideRetireLotPopup();
 }
+// function submitRetireLot(event) {
+//     event.preventDefault();
+    
+//     const lbsRemaining = document.getElementById('retireLbsInput').value;
+//     const notes = document.getElementById('retireNotesInput').value;
+//     const retireDate = document.getElementById('retireDateInput').value;
+
+//     console.log('Form data:', { // ADD THIS
+//         lot_id: currentLotId,
+//         lbs_remaining: lbsRemaining,
+//         retire_date: retireDate,
+//         notes: notes
+//     });
+    
+//     fetch('/office/retire-lot/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': getCookie('csrftoken')
+//         },
+//         body: JSON.stringify({
+//             lot_id: currentLotId,
+//             lbs_remaining: lbsRemaining,
+//             retire_date: retireDate,
+//             notes: notes
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         console.log('Response data:', data);
+//         if (data.success) {
+//             localStorage.removeItem('germination_inventory_data'); // Clear the cached data directly
+//             showMessage('Lot retired successfully', 'success');
+//             setTimeout(() => {
+//                 window.location.href = window.location.pathname;
+//             }, 3000);
+//         } else {
+//             showMessage('Error retiring lot: ' + (data.error || 'Unknown error'), 'error');
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//         showMessage('Network error occurred', 'error');
+//     });
+    
+//     hideRetireLotPopup();
+// }
 
 
 function recordStockSeed(lotId) {
@@ -3115,7 +2850,7 @@ function reprintStockSeedLabel() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
                     lot_id: lotId // Use the captured value
@@ -3205,7 +2940,7 @@ function proceedWithStockSeedSubmission(qty, notes) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             lot_id: currentLotId,
@@ -3268,7 +3003,7 @@ function collectStockSeedPrintData(quantity) {
     try {
         // Get variety information
         const varietyName = document.getElementById('varietyName').textContent.trim();
-        const crop = document.getElementById('varietyType').textContent.trim();
+        const crop = document.getElementById('cropFilter').textContent.trim();
         
         // Find the lot data using currentLotId
         const lotData = allLotsData.find(lot => lot.id == currentLotId);
@@ -3349,7 +3084,7 @@ function submitAddOverwriteInventory(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             inventory_id: lastInventoryId,
@@ -3393,7 +3128,7 @@ function submitInventory(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             lot_id: currentLotId,
@@ -3458,81 +3193,24 @@ function hideGerminationPopup() {
     document.getElementById('germinationForm').reset();
 }
 
-
-
-
-// function submitGermination(event) {
-//     event.preventDefault();
-    
-//     const germinationRate = document.getElementById('germinationRateInput').value;
-//     const testDate = document.getElementById('germinationDateInput').value;
-//     const notes = document.getElementById('germinationNotesInput').value;
-    
-//     fetch('/office/record-germination/', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'X-CSRFToken': getCSRFToken()
-//         },
-//         body: JSON.stringify({
-//             lot_id: currentLotId,
-//             germination_rate: germinationRate,
-//             test_date: testDate,
-//             notes: notes
-//         })
-//     })
-//     .then(response => {
-//         if (!response.ok) {
-//             return response.json().then(err => Promise.reject(err));
-//         }
-//         return response.json();
-//     })
-//     .then(data => {
-//         if (data.success) {
-//             showMessage('Germination recorded successfully', 'success');
-//             localStorage.removeItem('germination_inventory_data'); // Clear the cached data directly
-//             setTimeout(() => {
-//                 window.location.href = window.location.pathname;
-//             }, 2000);
-//         } else {
-//             showMessage('Error recording germination: ' + (data.error || 'Unknown error'), 'error');
-//         }
-//     })
-//     .catch(error => {
-//         if (error.error) {
-//             showMessage('Error recording germination: ' + error.error, 'error');
-//         } else {
-//             console.error('Error:', error);
-//             showMessage('Network error occurred', 'error');
-//         }
-//     });
-    
-//     hideGerminationPopup();
-// }
-
-
-
 function submitGermination(event) {
     event.preventDefault();
     
     const germinationRate = document.getElementById('germinationRateInput').value;
     const testDate = document.getElementById('germinationDateInput').value;
     const notes = document.getElementById('germinationNotesInput').value;
-    const isHomeTest = document.getElementById('homeTestCheckbox').checked;
-
+    
     fetch('/office/record-germination/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             lot_id: currentLotId,
             germination_rate: germinationRate,
             test_date: testDate,
-            notes: notes,
-            is_home_test: isHomeTest,
-            for_year: packedForYear  // This variable is already available from Django template
+            notes: notes
         })
     })
     .then(response => {
@@ -3649,7 +3327,7 @@ function setLotStatus(newStatus) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             lot_id: currentLotId,
@@ -3692,19 +3370,11 @@ function hideVarietyActionsPopup() {
     document.getElementById('varietyActionsPopup').classList.remove('show');
 }
 
-
 function editVarietyWithPassword() {
     hideVarietyActionsPopup();
-    // if (requirePassword) {
-    //     showPasswordPopup(openEditVarietyPopup, null);
-    // } else {
-        openEditVarietyPopup();
-    // }
+    // showPasswordPopup(openEditVarietyPopup, null);
+    openEditVarietyPopup(null);
 }
-// function editVarietyWithPassword() {
-//     hideVarietyActionsPopup();
-//     showPasswordPopup(openEditVarietyPopup, null);
-// }
 
 
 // Close modal event listeners
@@ -3770,7 +3440,7 @@ function viewVarietyUsage() {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         }
     })
     .then(response => {
@@ -4040,7 +3710,7 @@ function confirmDeleteLot() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({
                 lot_id: lotToDelete
@@ -4075,18 +3745,9 @@ function findLotById(lotId) {
     return allLotsData.find(lot => lot.id == lotId);
 }
 
-// function showAddProductPopup() {
-//     showPasswordPopup(proceedWithAddProduct, null);
-// }
-
 function showAddProductPopup() {
-    // if (requirePassword) {
-    //     showPasswordPopup(proceedWithAddProduct, null);
-    // } else {
-        proceedWithAddProduct();
-    // }
+    proceedWithAddProduct();
 }
-
 
 function proceedWithAddProduct() {
     document.body.classList.add('modal-open');
@@ -4105,8 +3766,18 @@ function submitAddProduct(event) {
     const formData = new FormData();
     formData.append('variety_id', VARIETY_SKU_PREFIX);
     formData.append('sku_suffix', document.getElementById('productSkuSuffix').value);
-    formData.append('pkg_size', document.getElementById('productPkgSize').value);
-    formData.append('env_type', document.getElementById('productEnvType').value);
+
+    // formData.append('pkg_size', document.getElementById('productPkgSize').value);
+    // formData.append('env_type', document.getElementById('productEnvType').value);
+    const pkgSize = document.getElementById('productPkgSize').value;
+    if (pkgSize) {
+        formData.append('pkg_size', pkgSize);
+    }
+    const envType = document.getElementById('productEnvType').value;
+    if (envType) {
+        formData.append('env_type', envType);
+    }
+
     formData.append('alt_sku', document.getElementById('productAltSku').value);
     formData.append('lineitem_name', document.getElementById('productLineitemName').value);
     formData.append('rack_location', document.getElementById('productRackLocation').value);
@@ -4118,7 +3789,7 @@ function submitAddProduct(event) {
     // formData.append('bulk_pre_pack', document.getElementById('productBulkPrePack').value);
     formData.append('print_back', document.getElementById('productPrintBack').checked);
     formData.append('is_sub_product', document.getElementById('productIsSubProduct').checked);
-    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
     
     fetch('/office/add-product/', {
         method: 'POST',
@@ -4150,9 +3821,20 @@ function submitAddProduct(event) {
         
 }
 
-// CSRF token helper - read from meta tag
-function getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 // Dashboard navigation
@@ -4255,7 +3937,7 @@ function saveScoopSize(productId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
             product_id: productId,
