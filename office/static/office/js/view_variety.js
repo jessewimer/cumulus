@@ -1100,7 +1100,7 @@ function saveVarietyChanges() {
         crop: document.getElementById('editCrop').value,
         common_spelling: document.getElementById('editCommonSpelling').value,
         common_name: document.getElementById('editCommonName').value,
-        group: document.getElementById('editGroup').value,
+        // group: document.getElementById('editGroup').value,
         species: document.getElementById('editSpecies').value,
         subtype: document.getElementById('editSubtype').value,
         days: document.getElementById('editDays').value,
