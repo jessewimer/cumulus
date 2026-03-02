@@ -354,9 +354,10 @@
                                 {% if variety.photo_path %}
                                     {% static variety.photo_path as photo_url %}
                                     <img src="{{ photo_url }}"
-                                         alt="{{ variety.var_name }}"
-                                         class="photo-thumbnail"
-                                         onclick="openPhotoModal('{{ photo_url }}', '{{ variety.var_name }}')">
+                                        alt="{{ variety.var_name }}"
+                                        class="photo-thumbnail"
+                                        data-photo="{{ photo_url }}"
+                                        data-name="{{ variety.var_name }}">
                                 {% else %}
                                     <div class="no-photo">No photo</div>
                                 {% endif %}
@@ -408,6 +409,12 @@
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closePhotoModal();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('photo-thumbnail')) {
+                openPhotoModal(e.target.dataset.photo, e.target.dataset.name);
+            }
         });
     </script>
 </body>
