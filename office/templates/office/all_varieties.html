@@ -280,6 +280,16 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
+        .notes-cell {
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #555;
+            font-size: 0.9rem;
+            cursor: default;
+        }
+
         /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
@@ -340,6 +350,7 @@
                             <th>Crop</th>
                             <th>Species</th>
                             <th>Subtype</th>
+                            <th>Notes</th>
                             <th style="width: 90px;">Photo</th>
                         </tr>
                     </thead>
@@ -349,7 +360,8 @@
                             <td class="variety-name">{{ variety.var_name }}</td>
                             <td>{{ variety.crop }}</td>
                             <td><em>{{ variety.species }}</em></td>
-                            <td>{{ variety.subtype }}</td>
+                            <td>{{ variety.subtype|default:"" }}</td>
+                            <td class="notes-cell" title="{{ variety.var_notes|default:'' }}">{{ variety.var_notes|default:"" }}</td>
                             <td>
                                 {% if variety.photo_path %}
                                     {% static variety.photo_path as photo_url %}

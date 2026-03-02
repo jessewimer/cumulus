@@ -3878,6 +3878,8 @@ def update_variety_notes(request, sku_prefix):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+@login_required(login_url='/office/login/')
+@user_passes_test(is_employee)
 def all_varieties(request):
     varieties = Variety.objects.all().order_by('crop', 'var_name')
     crops = (Variety.objects
