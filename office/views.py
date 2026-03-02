@@ -3877,3 +3877,13 @@ def update_variety_notes(request, sku_prefix):
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def all_varieties(request):
+    varieties = Variety.objects.all().order_by('crop', 'var_name')
+    crops = (Variety.objects
+             .exclude(crop__isnull=True)
+             .exclude(crop='')
+             .values_list('crop', flat=True)
+             .distinct()
+             .order_by('crop'))
+    return render(request, 'office/all_varieties.html', {'varieties': varieties, 'crops': crops})

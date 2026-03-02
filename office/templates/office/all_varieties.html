@@ -1,0 +1,414 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cumulus Seeds - All Varieties</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .variety-count {
+            font-size: 0.85rem;
+            color: #888;
+            font-weight: 500;
+            background: #f1f3f4;
+            border-radius: 20px;
+            padding: 4px 12px;
+            white-space: nowrap;
+        }
+
+        /* Crop filter in header */
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .styled-select {
+            padding: 10px 14px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            background: white;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+        }
+
+        .styled-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .styled-select:hover {
+            border-color: #667eea;
+        }
+
+        /* Dashboard button */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Table */
+        .table-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table-container {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            border-radius: 20px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .variety-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .variety-table th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .variety-table th:first-child {
+            border-top-left-radius: 16px;
+        }
+
+        .variety-table th:last-child {
+            border-top-right-radius: 16px;
+        }
+
+        .variety-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            background: white;
+            transition: background 0.2s ease;
+            vertical-align: middle;
+        }
+
+        .variety-table tbody tr:hover td {
+            background: #f8f9ff;
+        }
+
+        .variety-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .photo-thumbnail {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e1e5e9;
+            display: block;
+        }
+
+        .photo-thumbnail:hover {
+            transform: scale(1.12);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        /* Empty photo placeholder */
+        .no-photo {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            background: #f1f3f4;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bbb;
+            font-size: 0.7rem;
+        }
+
+        /* Photo Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            background: transparent;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #333;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .photo-modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header-content { flex-direction: column; align-items: flex-start; }
+            .brand-title { font-size: 1.8rem; }
+            .table-container { max-height: calc(100vh - 240px); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="brand-title">All Varieties</h1>
+                    <span class="variety-count" id="variety-count">{{ varieties|length }} varieties</span>
+                </div>
+
+                <div style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+                    <!-- Crop Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label" for="crop-filter">Crop</label>
+                        <select id="crop-filter" class="styled-select" onchange="filterTable()">
+                            <option value="">All Crops</option>
+                            {% for crop in crops %}
+                                <option value="{{ crop|lower }}">{{ crop|capfirst }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Dashboard Button -->
+                    <button class="btn btn-secondary" onclick="window.location.href='/office/dashboard/'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+            <div class="table-container">
+                <table class="variety-table" id="variety-table">
+                    <thead>
+                        <tr>
+                            <th>Variety</th>
+                            <th>Crop</th>
+                            <th>Species</th>
+                            <th>Subtype</th>
+                            <th style="width: 90px;">Photo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variety in varieties %}
+                        <tr data-crop="{{ variety.crop|lower }}">
+                            <td class="variety-name">{{ variety.var_name }}</td>
+                            <td>{{ variety.crop }}</td>
+                            <td><em>{{ variety.species }}</em></td>
+                            <td>{{ variety.subtype }}</td>
+                            <td>
+                                {% if variety.photo_path %}
+                                    {% static variety.photo_path as photo_url %}
+                                    <img src="{{ photo_url }}"
+                                         alt="{{ variety.var_name }}"
+                                         class="photo-thumbnail"
+                                         onclick="openPhotoModal('{{ photo_url }}', '{{ variety.var_name }}')">
+                                {% else %}
+                                    <div class="no-photo">No photo</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Photo Modal -->
+    <div class="modal-overlay" id="photoModal" onclick="if(event.target===this) closePhotoModal()">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePhotoModal()">&times;</button>
+            <img id="photoModalImage" class="photo-modal-image" src="" alt="">
+            <h3 id="photoModalTitle" style="margin-top: 16px; color: #333;"></h3>
+        </div>
+    </div>
+
+    <script>
+        function filterTable() {
+            const cropVal = document.getElementById('crop-filter').value.toLowerCase();
+            const rows = document.querySelectorAll('#variety-table tbody tr');
+            let visible = 0;
+
+            rows.forEach(row => {
+                const rowCrop = row.getAttribute('data-crop') || '';
+                const show = (!cropVal || rowCrop === cropVal);
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            document.getElementById('variety-count').textContent = visible + ' varieties';
+        }
+
+        function openPhotoModal(photoUrl, varietyName) {
+            document.getElementById('photoModalImage').src = photoUrl;
+            document.getElementById('photoModalImage').alt = varietyName;
+            document.getElementById('photoModalTitle').textContent = varietyName;
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+
+        function closePhotoModal() {
+            document.getElementById('photoModal').style.display = 'none';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closePhotoModal();
+        });
+    </script>
+</body>
+</html>

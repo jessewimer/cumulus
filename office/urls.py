@@ -2,10 +2,8 @@ from django.urls import path
 from .views import OfficeLoginView, OfficeLogoutView, office_landing, view_variety, analytics, admin_dashboard
 from .views import *
 import products.views as product_views
-# import stores.views as store_views
 import lots.views as lot_views
 import orders.views as order_views
-# from stores.models import Store
 
 urlpatterns = [
     # Authentication
@@ -25,6 +23,7 @@ urlpatterns = [
     # NEW changes for viewing variety, the first was the og, the second allows for sku prefix
     path('view-variety/', view_variety, name='view_variety'), # For dashboard - loads last selected
     path('view-variety/<str:sku_prefix>/', view_variety, name='view_variety_with_sku'),  # For specific variety
+    path('varieties/all/', all_varieties, name='all_varieties'),
 
 # ============
     path('analytics/', analytics, name='analytics'),
