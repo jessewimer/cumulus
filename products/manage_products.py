@@ -142,6 +142,8 @@ def update_all_variety_photos():
     
     for variety in varieties:
         sku_prefix = variety.sku_prefix
+        # make lowercase
+        sku_prefix = sku_prefix.lower()
         webp_file = os.path.join(settings.BASE_DIR, 'products', 'static', 'products', 'photos', f'{sku_prefix}.webp')
         jpg_file = os.path.join(settings.BASE_DIR, 'products', 'static', 'products', 'photos', f'{sku_prefix}.jpg')
         
