@@ -142,11 +142,12 @@ def update_all_variety_photos():
     
     for variety in varieties:
         sku_prefix = variety.sku_prefix
-        # make lowercase
         sku_prefix = sku_prefix.lower()
+        
         webp_file = os.path.join(settings.BASE_DIR, 'products', 'static', 'products', 'photos', f'{sku_prefix}.webp')
         jpg_file = os.path.join(settings.BASE_DIR, 'products', 'static', 'products', 'photos', f'{sku_prefix}.jpg')
-        
+        jpg_upper_file = os.path.join(settings.BASE_DIR, 'products', 'static', 'products', 'photos', f'{sku_prefix}.JPG')
+
         if os.path.exists(webp_file):
             variety.photo_path = f'products/photos/{sku_prefix}.webp'
             print(f"✓ Set webp photo for {sku_prefix}")
@@ -155,6 +156,11 @@ def update_all_variety_photos():
         elif os.path.exists(jpg_file):
             variety.photo_path = f'products/photos/{sku_prefix}.jpg'
             print(f"✓ Set jpg photo for {sku_prefix}")
+            variety.save()
+            updated_count += 1
+        elif os.path.exists(jpg_upper_file):
+            variety.photo_path = f'products/photos/{sku_prefix}.JPG'
+            print(f"✓ Set JPG photo for {sku_prefix}")
             variety.save()
             updated_count += 1
     
