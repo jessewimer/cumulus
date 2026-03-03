@@ -23,3 +23,6 @@ factor in store credit for pkts returned when finalizing an order
 take mixes out of germination_inventory / growouts page
 add base mixes to variety table but exclude from search variety 
 
+
+Add species and subtype (if subtype exists) in the header of view variety page (under sku and crop)
+Fix Belladonna Cliveden Beauty sku to DEL-CB
