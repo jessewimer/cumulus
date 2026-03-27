@@ -359,7 +359,7 @@
                         {% for variety in varieties %}
                         <tr data-crop="{{ variety.crop|lower }}">
                             <td style="font-size: 0.95rem; color: #333; font-family: monospace; white-space: nowrap;">{{ variety.sku_prefix }}</td>
-                            <td class="variety-name">{{ variety.var_name }}</td>
+                            <td class="variety-name"><a href="{% url 'view_variety_with_sku' variety.sku_prefix %}" style="color: #333; text-decoration: none; border-bottom: 1px solid #ccc;">{{ variety.var_name }}</a></td>
                             <td>{{ variety.crop }}</td>
                             <td><em>{{ variety.species }}</em></td>
                             <td>{{ variety.subtype|default:"" }}</td>
