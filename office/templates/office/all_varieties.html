@@ -358,7 +358,7 @@
                     <tbody>
                         {% for variety in varieties %}
                         <tr data-crop="{{ variety.crop|lower }}">
-                            <td style="font-size: 0.95rem; color: #333; font-family: monospace;">{{ variety.sku_prefix }}</td>
+                            <td style="font-size: 0.95rem; color: #333; font-family: monospace; white-space: nowrap;">{{ variety.sku_prefix }}</td>
                             <td class="variety-name">{{ variety.var_name }}</td>
                             <td>{{ variety.crop }}</td>
                             <td><em>{{ variety.species }}</em></td>
