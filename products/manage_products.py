@@ -329,6 +329,57 @@ def edit_variety():
     else:
         print("❌ Changes discarded")
 
+
+def export_varieties_to_csv():
+    """Export all variety data to a CSV file in the same directory as this script."""
+    import csv
+    from datetime import datetime
+ 
+    varieties = Variety.objects.all().order_by('sku_prefix')
+ 
+    if not varieties.exists():
+        print("\n❌ No varieties found to export.")
+        return
+ 
+    # Save to same directory as this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"variety_export_{timestamp}.csv"
+    filepath = os.path.join(script_dir, filename)
+ 
+    fields = [
+        'sku_prefix',
+        'var_name',
+        'crop',
+        'common_spelling',
+        'common_name',
+        'species',
+        'subtype',
+        'days',
+        'active',
+        'stock_qty',
+        'photo_path',
+        'wholesale',
+        'wholesale_rack_designation',
+        'website_bulk',
+        'is_mix',
+        'var_notes',
+        'ws_notes',
+        'ws_description',
+        'category',
+    ]
+ 
+    with open(filepath, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+ 
+        for v in varieties:
+            writer.writerow({field: getattr(v, field, '') for field in fields})
+ 
+    print(f"\n✅ Exported {varieties.count()} varieties to:")
+    print(f"   {filepath}")
+
+
 def variety_menu():
     """Variety management submenu"""
     while True:
@@ -345,9 +396,10 @@ def variety_menu():
         print("7.  Edit variety")
         print("8.  Delete variety")
         print("9.  View variety lots")
+        print("10. Export varieties to CSV")
         print("0.  Back to main menu")
         
-        choice = get_choice("\nSelect option: ", ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+        choice = get_choice("\nSelect option: ", ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
         
         if choice == '0':
             break
@@ -378,7 +430,9 @@ def variety_menu():
         elif choice == '9':
             view_variety_lots()
             pause()
-
+        elif choice == '10':
+            export_varieties_to_csv()
+            pause()
 
 # ============================================================================
 # PRODUCT MANAGEMENT
